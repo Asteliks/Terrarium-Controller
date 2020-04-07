@@ -3,45 +3,64 @@ const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 const R = require('ramda')
 const path = require('path')
-const argon2 = require('argon2')
-const buildDirectory = '/../public'
 ObjectId = require('mongodb').ObjectID
 function Server(myMongo) {
   const app = express()
   const cors = require('cors')
+
   app.use(bodyParser.urlencoded({ extended: false }))
 
   app.use(bodyParser.json())
 
-  app.use(express.static(path.join(__dirname, buildDirectory)))
-
   const port = process.env.PORT || 5002
-  const tokenPassword = 'haslohaslohaslohaslohaslo'
 
   this.init = () => {
     app.listen(port, () => console.log(`App listening on http://127.0.0.1:${port}`))
   }
-  const omitId=R.omit(['_id'])
+  const omitId = R.omit(['_id'])
+  const configId = '5e8cc6011c9d44000028f3a8' //whardkodowane, bo czemu nie
+  const configQuery = { _id: ObjectId(configId) }
   app.use(cors())
 
-  // /config?temp=30.5&wilg=5.5
-  // /reading?temp=30.5&wilg=10.4
-  // /stateChange?grzalka=1&pompka=0&date=2020.10.04
-
   app.get('/config', async (req, res) => {
-    res.send({ temp: '30.5', wilg: '10.5' })
+    const temp = req.query.temp
+    const wilg = req.query.wilg
+    const config = await myMongo.findOne('config', configQuery)
+    await myMongo.updateOne('config', configQuery, {
+      $set: {
+        ...config,
+        ...(wilg ? { wilg } : {}),
+        ...(temp ? { temp } : {}),
+      },
+    })
+    const current = omitId(await myMongo.findOne('config', configQuery))
+    res.send(current)
   })
 
   app.get('/reading', async (req, res) => {
-    res.send({ temp: '30.5', wilg: '10.5' })
+    const temp = req.query.temp
+    const wilg = req.query.wilg
+    if (temp && wilg) {
+      await myMongo.insertOne('readings', { wilg, temp, date: new Date() })
+      res.send(R.map(omitId, await myMongo.findToArray('readings', {})))
+    } else {
+      res.send({ error: 'error' })
+    }
   })
 
   app.get('/stateChange', async (req, res) => {
-    res.send({ temp: '30.5', wilg: '10.5' })
+    const pompka = req.query.pompka
+    const grzalka = req.query.grzalka
+    if (pompka && grzalka) {
+      await myMongo.insertOne('readings', { grzalka, pompka, date: new Date() })
+      res.send(R.map(omitId, await myMongo.findToArray('readings', {})))
+    } else {
+      res.send({ error: 'error' })
+    }
   })
 
   app.get('/getConfig', async (req, res) => {
-    res.send(omitId(await myMongo.findOne('config', { _id: ObjectId('5e8cc6011c9d44000028f3a8') })))
+    res.send(omitId(await myMongo.findOne('config', configQuery)))
   })
 
   app.get('/getReadings', async (req, res) => {
