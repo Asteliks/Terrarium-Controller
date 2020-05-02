@@ -17,8 +17,6 @@ const char* serverUstawienia = "https://esp32-terrarium-control.now.sh/getConfig
 const char* serverNameHumi = "http://192.168.4.1/humidity";
 const char* serverNamePres = "http://192.168.4.1/pressure";
 
-char* odpowiedz;
-
 // DHT Sensor
 uint8_t DHTPin = 4; 
                
@@ -62,19 +60,16 @@ unsigned long aktualnyCzas = millis();
 if(aktualnyCzas - poprzedniCzas >= oczekiwanie) {
 //  Sprawdz czy sie polaczyles z WiFi
   if(WiFi.status()==WL_CONNECTED){
-//    do dopisania zbierania zmiennych ustawien
-//    odpowiedz = httpGETDATA(serverUstawienia);
-     String odp = httpGETDATA(serverUstawienia);
-     odp = odp.substring(3,odp.length());
-     char dupajasiu[odp.length()];
+//   do dopisania zbierania zmiennych ustawien
+     String odp = httpGETDATA(serverUstawienia); //przerabia info z serwera na string
+     odp = odp.substring(3,odp.length()); //pbcina pierwsze 3 znaki
+     char dupajasiu[odp.length()]; //tworzymy + przerabiamy na char
      odp.toCharArray(dupajasiu,odp.length());
-     char* Tem = strtok(dupajasiu," :\{\"temp,");
-//    char *Tem = strtok(odpowiedz," temp,.");
+     char* Tem = strtok(dupajasiu," :\{\"temp,"); //zwraca pierwsza zmienna
     while (Tem != NULL){
     Serial.println(Tem);
     Tem = strtok(NULL," :\{\"temp,wilg");
     }
-    Serial.println(odpowiedz);
 
 
   }
