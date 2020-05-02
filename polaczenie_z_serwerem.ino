@@ -70,6 +70,13 @@ void loop() {
       Serial.print(" *C, ");
       Serial.print(setHumidity);
       Serial.println(" %");
+      Temperature = dht.readTemperature();
+      Humidity = dht.readHumidity();
+      Serial.print("Sir! Czytam: ");
+      Serial.print(Temperature);
+      Serial.print(" *C, ");
+      Serial.print(Humidity);
+      Serial.println(" %");
 //      odp = odp.substring(3, odp.length()); //pbcina pierwsze 3 znaki
 //      char dupajasiu[odp.length()]; //tworzymy + przerabiamy na char
 //      odp.toCharArray(dupajasiu, odp.length());
