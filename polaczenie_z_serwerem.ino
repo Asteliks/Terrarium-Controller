@@ -1,7 +1,19 @@
+//notatka co zrobić
+// + PID
+// + Wysyłanie pomiarów i zmianów stanów
+// + Histereza (+/- do włącz wyłącz)
+// + zbieraj 18 pomiarów usuwaj skrajne max, min i licz średnią
+// + upiększ kod i zoptymalizuj
+
+
 #include <WiFi.h>
 //#include <WebServer.h>
 #include "DHT.h"
 #include <HTTPClient.h>
+
+//wykorzystane piny
+#define heater 23
+#define humidifier 1
 
 // Uncomment one of the lines below for whatever DHT sensor type you're using!
 #define DHTTYPE DHT11   // DHT 11
@@ -35,6 +47,11 @@ void setup() {
   Serial.begin(115200);
   delay(100);
 
+  pinMode(heater, OUTPUT);
+  pinMode(humidifier, OUTPUT);
+  digitalWrite(heater, LOW);
+  digitalWrite(humidifier, LOW);
+
   pinMode(DHTPin, INPUT);
 
   dht.begin();
@@ -67,16 +84,19 @@ void loop() {
       setTemperature = getIntX(odp,1);
       setHumidity = getIntX(odp,2);
       Serial.print(setTemperature);
-      Serial.print(" *C, ");
+      Serial.print(" °C, ");
       Serial.print(setHumidity);
       Serial.println(" %");
       Temperature = dht.readTemperature();
       Humidity = dht.readHumidity();
       Serial.print("Sir! Czytam: ");
       Serial.print(Temperature);
-      Serial.print(" *C, ");
+      Serial.print(" °C, ");
       Serial.print(Humidity);
       Serial.println(" %");
+      Serial.print(error(setTemperature,Temperature));
+//      digitalWrite(heater, HIGH);
+//      digitalWrite(humidifier, HIGH);
 //      odp = odp.substring(3, odp.length()); //pbcina pierwsze 3 znaki
 //      char dupajasiu[odp.length()]; //tworzymy + przerabiamy na char
 //      odp.toCharArray(dupajasiu, odp.length());
@@ -136,4 +156,9 @@ float getIntX(String odp, int x) {
     zmienna = strtok(NULL, " :\{\"temp,wilg");
     return atof(zmienna);
   }
+}
+
+int error(float set, float is) {
+  int error = set - is;
+  return error;
 }
