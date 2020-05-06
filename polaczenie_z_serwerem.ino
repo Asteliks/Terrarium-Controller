@@ -1,7 +1,7 @@
 //notatka co zrobić
-// + PID
-// + Wysyłanie pomiarów i zmianów stanów
-// + Histereza (+/- do włącz wyłącz)
+// + PID - gotowe
+// + Wysyłanie pomiarów i zmian stanów
+// + Histereza (+/- do włącz wyłącz) - gotowe
 // + zbieraj 18 pomiarów usuwaj skrajne max, min i licz średnią - gotowe
 // + upiększ kod i zoptymalizuj
 
@@ -13,7 +13,17 @@
 
 //wykorzystane piny
 #define heater 23
-#define humidifier 1
+#define humidifier 22
+
+//nastaw PID dla grzałki
+float KpTemp = 0.8;
+float KiTemp = 0.001;
+float KdTemp = 0.03;
+
+//nastaw PID dla pompki
+float KpHum = 2;
+float KiHum = 1.5;
+float KdHum = 1;
 
 // Uncomment one of the lines below for whatever DHT sensor type you're using!
 #define DHTTYPE DHT11   // DHT 11
@@ -39,9 +49,28 @@ float Temperature;
 float Humidity;
 float setTemperature;
 float setHumidity;
+float ITemp;
+float IHum;
+float DTemp;
+float Tempp; //temperatura poprzednia
+float DHum;
+float Hump; //wilgotność poprzednia
+float ETemp;
+float EHum;
+float PIDTemp;
+float PIDHum;
+bool Temp;
+bool Hum;
 
-unsigned long poprzedniCzas = 0;
+//logika czasowa
 const long oczekiwanie = 5000; //5000ms
+const long oczekiwaniePID = 5000; //5000ms
+const long oczekiwanieWiFi = 5000; //5000ms
+
+unsigned long poprzedniCzasWiFi = 0;
+unsigned long poprzedniCzasPIDTemp = 0;
+unsigned long poprzedniCzasPIDHum = 0;
+unsigned long dt;
 
 void setup() {
   Serial.begin(115200);
@@ -76,7 +105,7 @@ void loop() {
 
   unsigned long aktualnyCzas = millis();
 
-  if (aktualnyCzas - poprzedniCzas >= oczekiwanie) {
+  if (aktualnyCzas - poprzedniCzasWiFi >= oczekiwanieWiFi) {
     //  Sprawdz czy sie polaczyles z WiFi
     if (WiFi.status() == WL_CONNECTED) {
       //   do dopisania zbierania zmiennych ustawien
@@ -89,27 +118,74 @@ void loop() {
       Serial.println(" %");
 
       //    Pomiar Temperatury
-      Temperature = dht.readTemperature();
-      Humidity = dht.readHumidity();
+      Temperature = getTemp();
+      Humidity = getHum();
       Serial.print("Sir! Czytam: ");
       Serial.print(Temperature);
       Serial.print(" °C, ");
       Serial.print(Humidity);
-      Serial.println(" %");
-      Serial.println(error(setTemperature, Temperature));
-      Serial.print(getTemp());
-      Serial.println(" obliczyłem tyle boi");
+      Serial.print(" %. Różnica: ");
+      Serial.print(error(setTemperature, Temperature));
+      Serial.print(" °C, ");
+      Serial.print(error(setHumidity, Humidity));
+      Serial.print(" %");
+
+      //    PID dla temperatury
+      aktualnyCzas = millis();
+      dt = (aktualnyCzas - poprzedniCzasPIDTemp) / 1000;
+      poprzedniCzasPIDTemp = aktualnyCzas;
+      ETemp = error(setTemperature, Temperature);
+      ITemp = (ETemp * dt) + ITemp;
+      DTemp = (ETemp - Tempp) / dt;
+      Tempp = ETemp;
+      PIDTemp = (KpTemp * ETemp) + (KiTemp * ITemp) + (KdTemp * DTemp);
+      if (PIDTemp > 1) {
+        PIDTemp = 1;
+        ITemp = ITemp - (ETemp * dt);
+      }
+      else if (PIDTemp < 0) {
+        PIDTemp = 0;
+        ITemp = ITemp - (ETemp * dt);
+      }
+      if (PIDTemp > 0.2) {
+        digitalWrite(heater, HIGH);
+        Temp = true;
+      }
+      else if (PIDTemp <= 0.2) {
+        digitalWrite(heater, LOW);
+        Temp = false;
+      }
+
+      //    PID dla wilgotnosci
+      aktualnyCzas = millis();
+      dt = (aktualnyCzas - poprzedniCzasPIDHum) / 1000;
+      poprzedniCzasPIDHum = aktualnyCzas;
+      EHum = error(setHumidity, Humidity);
+      IHum = (EHum * dt) + IHum;
+      DHum = (EHum - Hump) / dt;
+      Hump = EHum;
+      PIDHum = (KpHum * EHum) + (KiHum * IHum) + (KdHum * DHum);
+      if (PIDHum > 1) {
+        PIDHum = 1;
+        IHum = IHum - (EHum * dt);
+      }
+      else if (PIDHum < 0) {
+        PIDHum = 0;
+        IHum = IHum - (EHum * dt);
+      }
+      if (PIDHum > 0.2) {
+        digitalWrite(humidifier, HIGH);
+        Hum = true;
+      }
+      else if (PIDHum <= 0.2) {
+        digitalWrite(humidifier, LOW);
+        Hum = false;
+      }
+
+
+
       //      digitalWrite(heater, HIGH);
       //      digitalWrite(humidifier, HIGH);
-      //      odp = odp.substring(3, odp.length()); //pbcina pierwsze 3 znaki
-      //      char dupajasiu[odp.length()]; //tworzymy + przerabiamy na char
-      //      odp.toCharArray(dupajasiu, odp.length());
-      //      char* Tem = strtok(dupajasiu, " :\{\"temp,"); //zwraca pierwsza zmienna
-      //      while (Tem != NULL) {
-      //        Serial.println(Tem);
-      //        Tem = strtok(NULL, " :\{\"temp,wilg");
-      //      }
-
 
     }
   }
@@ -172,7 +248,6 @@ float getTemp() {
   while (true) {
     x = dht.readTemperature();
     if (!isnan(x)) { //sprawdza czy odczyt jest poprawny
-      Serial.println("true");
       break;
     }
   }
@@ -182,7 +257,6 @@ float getTemp() {
   int var = 0;
   while (var < 17) {
     x = dht.readTemperature();
-    Serial.println("true1");
     if (!isnan(x)) {
       tempSum = tempSum + x;
       if (x > maxTemp) {
@@ -191,7 +265,6 @@ float getTemp() {
       if (x < minTemp) {
         minTemp = x;
       }
-      Serial.println("true3");
       var++;
     }
   }
@@ -231,7 +304,7 @@ float getHum() {
   return (humSum - maxHum - minHum) / 16;
 }
 
-int error(float set, float is) {
-  int error = set - is;
+float error(float set, float is) {
+  float error = set - is;
   return error;
 }
