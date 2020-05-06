@@ -81,12 +81,14 @@ void loop() {
     if (WiFi.status() == WL_CONNECTED) {
       //   do dopisania zbierania zmiennych ustawien
       String odp = httpGETDATA(serverUstawienia); //przerabia info z serwera na string
-      setTemperature = getIntX(odp,1);
-      setHumidity = getIntX(odp,2);
+      setTemperature = getIntX(odp, 1);
+      setHumidity = getIntX(odp, 2);
       Serial.print(setTemperature);
       Serial.print(" °C, ");
       Serial.print(setHumidity);
       Serial.println(" %");
+
+      //    Pomiar Temperatury
       Temperature = dht.readTemperature();
       Humidity = dht.readHumidity();
       Serial.print("Sir! Czytam: ");
@@ -94,17 +96,19 @@ void loop() {
       Serial.print(" °C, ");
       Serial.print(Humidity);
       Serial.println(" %");
-      Serial.print(error(setTemperature,Temperature));
-//      digitalWrite(heater, HIGH);
-//      digitalWrite(humidifier, HIGH);
-//      odp = odp.substring(3, odp.length()); //pbcina pierwsze 3 znaki
-//      char dupajasiu[odp.length()]; //tworzymy + przerabiamy na char
-//      odp.toCharArray(dupajasiu, odp.length());
-//      char* Tem = strtok(dupajasiu, " :\{\"temp,"); //zwraca pierwsza zmienna
-//      while (Tem != NULL) {
-//        Serial.println(Tem);
-//        Tem = strtok(NULL, " :\{\"temp,wilg");
-//      }
+      Serial.println(error(setTemperature, Temperature));
+      Serial.print(getTemp());
+      Serial.println(" obliczyłem tyle boi");
+      //      digitalWrite(heater, HIGH);
+      //      digitalWrite(humidifier, HIGH);
+      //      odp = odp.substring(3, odp.length()); //pbcina pierwsze 3 znaki
+      //      char dupajasiu[odp.length()]; //tworzymy + przerabiamy na char
+      //      odp.toCharArray(dupajasiu, odp.length());
+      //      char* Tem = strtok(dupajasiu, " :\{\"temp,"); //zwraca pierwsza zmienna
+      //      while (Tem != NULL) {
+      //        Serial.println(Tem);
+      //        Tem = strtok(NULL, " :\{\"temp,wilg");
+      //      }
 
 
     }
@@ -145,9 +149,9 @@ float getIntX(String odp, int x) {
   odp.toCharArray(wiadomosc, odp.length());
   char* zmienna = strtok(wiadomosc, " :\{\"temp,"); //zwraca pierwsza zmienna
   if (x == 1) {
-//    Serial.print(zmienna);    
-//    Serial.println(atof("3.4"));
-//    Serial.println(atof(zmienna));
+    //    Serial.print(zmienna);
+    //    Serial.println(atof("3.4"));
+    //    Serial.println(atof(zmienna));
     return atof(zmienna);
   }
   else {
@@ -156,6 +160,75 @@ float getIntX(String odp, int x) {
     zmienna = strtok(NULL, " :\{\"temp,wilg");
     return atof(zmienna);
   }
+}
+
+float getTemp() {
+  float tempSum;
+  float maxTemp;
+  float minTemp;
+  float x;
+
+  //  pozyskanie pierwszego pomiaru
+  while (true) {
+    x = dht.readTemperature();
+    if (!isnan(x)) { //sprawdza czy odczyt jest poprawny
+      Serial.println("true");
+      break;
+    }
+  }
+  tempSum = x;
+  maxTemp = x;
+  minTemp = x;
+  int var = 0;
+  while (var < 17) {
+    x = dht.readTemperature();
+    Serial.println("true1");
+    if (!isnan(x)) {
+      tempSum = tempSum + x;
+      if (x > maxTemp) {
+        maxTemp = x;
+      }
+      if (x < minTemp) {
+        minTemp = x;
+      }
+      Serial.println("true3");
+      var++;
+    }
+  }
+  return (tempSum - maxTemp - minTemp) / 16;
+}
+
+float getHum() {
+  float humSum;
+  float maxHum;
+  float minHum;
+  float x;
+
+  //  pozyskanie pierwszego pomiaru
+  while (true) {
+    x = dht.readHumidity();
+    if (!isnan(x)) { //sprawdza czy odczyt jest poprawny
+      break;
+    }
+  }
+  humSum = x;
+  maxHum = x;
+  minHum = x;
+  int var = 0;
+  while (var < 17) {
+    x = dht.readHumidity();
+    if (!isnan(x)) {
+      humSum = humSum + x;
+      if (x > maxHum) {
+        maxHum = x;
+      }
+      if (x < minHum) {
+        minHum = x;
+      }
+      var++;
+    }
+  }
+  return (humSum - maxHum - minHum) / 16;
 }
 
 int error(float set, float is) {
