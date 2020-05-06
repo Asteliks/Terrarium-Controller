@@ -52,7 +52,7 @@ function Server(myMongo) {
     const pompka = req.query.pompka
     const grzalka = req.query.grzalka
     if (pompka && grzalka) {
-      await myMongo.insertOne('readings', { grzalka, pompka, date: new Date() })
+      await myMongo.insertOne('states', { grzalka, pompka, date: new Date() })
       res.send(R.map(omitId, await myMongo.findToArray('readings', {})))
     } else {
       res.send({ error: 'error' })
