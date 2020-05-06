@@ -2,7 +2,7 @@
 // + PID
 // + Wysyłanie pomiarów i zmianów stanów
 // + Histereza (+/- do włącz wyłącz)
-// + zbieraj 18 pomiarów usuwaj skrajne max, min i licz średnią
+// + zbieraj 18 pomiarów usuwaj skrajne max, min i licz średnią - gotowe
 // + upiększ kod i zoptymalizuj
 
 
