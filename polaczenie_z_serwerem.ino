@@ -5,8 +5,9 @@
 // + zbieraj 18 pomiarów usuwaj skrajne max, min i licz średnią - gotowe
 // + upiększ kod i zoptymalizuj
 // + korzystanie z 2 rdzeni - gotowe
+// + obsluga ekranu i przyciskow
 
-
+#include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
 //#include <WebServer.h>
 #include "DHT.h"
@@ -14,7 +15,11 @@
 
 //wykorzystane piny
 #define heater 23
-#define humidifier 22
+#define humidifier 15
+#define UP 33
+#define DOWN 32
+#define SET 25
+#define NEXT 26
 
 //nastaw PID dla grzałki
 float KpTemp = 0.8;
@@ -26,12 +31,19 @@ float KpHum = 2;
 float KiHum = 1.5;
 float KdHum = 1;
 
+//ustawienie ekranu
+int lcdColumns = 16;
+int lcdRows = 2;
+LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);
+
 // Uncomment one of the lines below for whatever DHT sensor type you're using!
 #define DHTTYPE DHT11   // DHT 11
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 //#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 
 /*Podaj SSID & haslo*/
+//const char* ssid = "DEMV";  // Enter SSID here
+//const char* password = "Viki$Madzia2";  //Enter Password here
 const char* ssid = "KIAE";  // Enter SSID here
 const char* password = "K3N4U5F42X";  //Enter Password here
 
@@ -47,11 +59,11 @@ uint8_t DHTPin = 4;
 DHT dht(DHTPin, DHTTYPE);
 
 float Temperature;
-float TemperatureS;
+float TemperatureS; //wyslana
 float Humidity;
-float HumidityS;
-float setTemperature;
-float setHumidity;
+float HumidityS; //wyslana
+volatile double setTemperature; //temperatura ustawiona
+volatile double setHumidity;  //wilgotoność ustawiona
 float ITemp;
 float IHum;
 float DTemp;
@@ -66,6 +78,59 @@ bool Temp;
 bool TempS; //wysłany stan
 bool Hum;
 bool HumS;  //wysłany stan
+volatile bool ekran = false;
+volatile bool flaga = false;
+volatile bool editMode = false;
+volatile bool editTemp = true;
+volatile bool sendSet = false;
+
+//logika przycisków
+void IRAM_ATTR up() {
+  if (flaga == false) {
+    flaga = true;
+    if (editMode == true) {
+      if (editTemp == true) {
+        setTemperature += 0.5;
+      }
+      else {
+        setHumidity += 0.5;
+      }
+    }
+  }
+}
+void IRAM_ATTR down() {
+  if (flaga == false) {
+    flaga = true;
+    if (editMode == true) {
+      if (editTemp == true) {
+        setTemperature -= 0.5;
+      }
+      else {
+        setHumidity -= 0.5;
+      }
+    }
+  }
+}
+void IRAM_ATTR set() {
+  if (flaga == false) {
+    flaga = true;
+    editMode = !editMode;
+    sendSet = true;
+    //  test=10;
+  }
+}
+void IRAM_ATTR next() {
+  if (flaga == false) {
+    flaga = true;
+    if (editMode == true) {
+      editTemp = !editTemp;
+    }
+    else {
+      ekran = !ekran;
+    }
+  }
+}
+
 
 //logika czasowa
 const long oczekiwanie = 5000; //5000ms
@@ -185,6 +250,19 @@ void setup() {
   Serial.println("o Boi jestem polaczony!");
   Serial.print("a moje IP: ");  Serial.println(WiFi.localIP());
 
+  // initialize LCD
+  lcd.init();
+  // turn on LCD backlight
+  lcd.backlight();
+  pinMode(UP, INPUT_PULLUP);
+  pinMode(DOWN, INPUT_PULLUP);
+  pinMode(SET, INPUT_PULLUP);
+  pinMode(NEXT, INPUT_PULLUP);
+  attachInterrupt(UP, up, FALLING);
+  attachInterrupt(DOWN, down, FALLING);
+  attachInterrupt(SET, set, FALLING);
+  attachInterrupt(NEXT, next, FALLING);
+
   xTaskCreatePinnedToCore(
     codeForTask1,            /* Task function. */
     "Task_1",                 /* name of task. */
@@ -201,24 +279,39 @@ void loop() {
 
   unsigned long aktualnyCzasCore1 = millis();
 
+  //  wysyla zmiany lokalne
+  if (sendSet == true && editMode == false) {
+    sendSet = false;
+    HTTPClient http;
+    http.begin("https://esp32-terrarium-control.now.sh/config?temp=" + String(setTemperature, 2) + "&wilg=" + String(setHumidity, 2));
+    Serial.println("Wysylam na serwer" + String(setTemperature, 2) + "oraz" + String(setHumidity, 2));
+    http.GET();
+    http.end();
+  }
   if (aktualnyCzasCore1 - poprzedniCzasWiFi >= oczekiwanieWiFi) {
     //  Sprawdz czy sie polaczyles z WiFi
     if (WiFi.status() == WL_CONNECTED) {
-      //   do dopisania zbierania zmiennych ustawien
-      String odp = httpGETDATA(serverUstawienia); //przerabia info z serwera na string
-      setTemperature = getIntX(odp, 1);
-      setHumidity = getIntX(odp, 2);
-      Serial.print(setTemperature);
-      Serial.print(" °C, ");
-      Serial.print(setHumidity);
-      Serial.print(" %");
-      Serial.print("This Task runs on Core: ");
-      Serial.println(xPortGetCoreID());
-
-      //wysyłanie stanu grzałki i pompki jeżeli zmiana stanu
-      if (TempS != Temp || HumS != Hum) {
-        TempS = Temp;
-        HumS = Hum;
+      if (editMode == false) {
+        //   do dopisania zbierania zmiennych ustawien
+        String odp = httpGETDATA(serverUstawienia); //przerabia info z serwera na string
+        noInterrupts();
+        setTemperature = getIntX(odp, 1);
+        setHumidity = getIntX(odp, 2);
+        interrupts();
+        Serial.print(setTemperature);
+        Serial.print(" °C, ");
+        Serial.print(setHumidity);
+        Serial.print(" %");
+        Serial.print("This Task runs on Core: ");
+        Serial.println(xPortGetCoreID());
+      }
+    }
+    //wysyłanie stanu grzałki i pompki jeżeli zmiana stanu
+    if (TempS != Temp || HumS != Hum) {
+      TempS = Temp;
+      HumS = Hum;
+      simLCD();
+      if (WiFi.status() == WL_CONNECTED) {
         Serial.println("wysyłam zmiane grzalki i pompki");
         if (TempS == true && HumS == true) {
           HTTPClient http; //z jakiegoś powodu jak deklarowałem to wcześniej to program był mniej stabilny
@@ -247,23 +340,30 @@ void loop() {
           http.end();
         }
       }
-      // wysyłanie temperatury i wilgotności jeżeli zmiana stanu
-      if (TemperatureS != Temperature || HumidityS != Humidity) {
-        TemperatureS = Temperature;
-        HumidityS = Humidity;
+    }
+    // wysyłanie temperatury i wilgotności jeżeli zmiana stanu
+    if (TemperatureS != Temperature || HumidityS != Humidity) {
+      TemperatureS = Temperature;
+      HumidityS = Humidity;
+      simLCD();
+      if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         Serial.println("wysyłam zmiane temp i wilg");
         http.begin("https://esp32-terrarium-control.now.sh/reading?temp=" + String(Temperature, 2) + "&wilg=" + String(Humidity, 2));
         http.GET();
         http.end();
       }
-
-      //      digitalWrite(heater, HIGH);
-      //      digitalWrite(humidifier, HIGH);
-
     }
+
   }
-  delay(1000);
+
+  if (flaga == true) {
+    noInterrupts();
+    simLCD();
+    delay (50);
+    flaga = false;
+    interrupts();
+  }
 }
 
 String httpGETDATA(const char* linkSerwera) {
@@ -376,6 +476,39 @@ float getHum() {
     }
   }
   return (humSum - maxHum - minHum) / 16;
+}
+
+void simLCD() {
+  if (editMode == true) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    if (editTemp == true) {
+      // print message
+      lcd.print("Temp set to " + String(setTemperature, 2));
+    }
+    else {
+      lcd.setCursor(0, 1);
+      lcd.print("Wil set to " + String(setHumidity, 2) + "%");
+    }
+  }
+  else {
+    if (ekran == false) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      // print message
+      lcd.print("Temp " + String(Temperature, 1) + "->" + String(setTemperature, 1));
+      lcd.setCursor(0, 1);
+      lcd.print("Wil " + String(Humidity, 1) + "%->" + String(setHumidity, 1) + "%");
+    }
+    else {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      // print message
+      lcd.print("Grzalka" + String(TempS, 2));
+      lcd.setCursor(0, 1);
+      lcd.print("Pompka" + String(HumS, 2));
+    }
+  }
 }
 
 float error(float set, float is) {
