@@ -1,6 +1,6 @@
 //notatka co zrobić
 // + PID - gotowe
-// + Wysyłanie pomiarów i zmian stanów
+// + Wysyłanie pomiarów i zmian stanów - gotowe
 // + Histereza (+/- do włącz wyłącz) - gotowe
 // + zbieraj 18 pomiarów usuwaj skrajne max, min i licz średnią - gotowe
 // + upiększ kod i zoptymalizuj
