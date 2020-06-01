@@ -62,6 +62,8 @@ float Temperature;
 float TemperatureS; //wyslana
 float Humidity;
 float HumidityS; //wyslana
+volatile double oldSetTemperature; //temperatura ustawiona
+volatile double oldSetHumidity;  //wilgotoność ustawiona
 volatile double setTemperature; //temperatura ustawiona
 volatile double setHumidity;  //wilgotoność ustawiona
 float ITemp;
@@ -289,19 +291,25 @@ void loop() {
     http.end();
   }
   if (aktualnyCzasCore1 - poprzedniCzasWiFi >= oczekiwanieWiFi) {
+    poprzedniCzasWiFi = aktualnyCzasCore1;
     //  Sprawdz czy sie polaczyles z WiFi
     if (WiFi.status() == WL_CONNECTED) {
       if (editMode == false) {
         //   do dopisania zbierania zmiennych ustawien
         String odp = httpGETDATA(serverUstawienia); //przerabia info z serwera na string
         noInterrupts();
+        oldSetTemperature = setTemperature;
+        oldSetHumidity = setHumidity;
         setTemperature = getIntX(odp, 1);
         setHumidity = getIntX(odp, 2);
         interrupts();
-        Serial.print(setTemperature);
-        Serial.print(" °C, ");
-        Serial.print(setHumidity);
-        Serial.print(" %");
+        if (oldSetTemperature != setTemperature || oldSetHumidity != setHumidity) {
+          simLCD();
+          Serial.print(setTemperature);
+          Serial.print(" °C, ");
+          Serial.print(setHumidity);
+          Serial.print(" %");
+        }
         Serial.print("This Task runs on Core: ");
         Serial.println(xPortGetCoreID());
       }
