@@ -139,10 +139,7 @@ const long oczekiwanie = 5000; //5000ms
 const long oczekiwaniePID = 5000; //5000ms
 const long oczekiwanieWiFi = 5000; //5000ms
 
-unsigned long poprzedniCzasWiFi = 0;
-unsigned long poprzedniCzasPIDTemp = 0;
-unsigned long poprzedniCzasPIDHum = 0;
-unsigned long dt;
+unsigned long poprzedniCzasWiFi = 0, poprzedniCzasPIDTemp = 0, poprzedniCzasPIDHum = 0, dt;
 
 TaskHandle_t Task1;
 
@@ -282,7 +279,7 @@ void loop() {
   unsigned long aktualnyCzasCore1 = millis();
 
   //  wysyla zmiany lokalne
-  if (sendSet == true && editMode == false) {
+  if (sendSet && !editMode) {
     sendSet = false;
     HTTPClient http;
     http.begin("https://esp32-terrarium-control.now.sh/config?temp=" + String(setTemperature, 2) + "&wilg=" + String(setHumidity, 2));
