@@ -226,7 +226,7 @@ void setup() {
 
   // initialize LCD
   lcd.init();
-  
+
   // turn on LCD backlight
   lcd.backlight();
   pinMode(upButton, INPUT_PULLUP);
@@ -355,16 +355,16 @@ String httpGETDATA(const char* serverLink) {
 * gets the number x int from serverReply
 */
 float getIntX(String serverReply, int x) {
-  serverReply = serverReply.substring(3, serverReply.length()); //pbcina pierwsze 3 znaki
-  char wiadomosc[serverReply.length()]; //tworzymy + przerabiamy na char
-  serverReply.toCharArray(wiadomosc, serverReply.length());
-  char* zmienna = strtok(wiadomosc, " :\{\"temp,"); //zwraca pierwsza zmienna
+  serverReply = serverReply.substring(3, serverReply.length()); //removes the first 3 characters from left
+  char message[serverReply.length()]; //converting to char
+  serverReply.toCharArray(message, serverReply.length());
+  char* wantedVariable = strtok(message, " :\{\"temp,"); //returns the first wanted variable
   if (x == 1) {
-    return atof(zmienna);
+    return atof(wantedVariable);
   }
   else {
-    zmienna = strtok(NULL, " :\{\"temp,wilg");
-    return atof(zmienna);
+    wantedVariable = strtok(NULL, " :\{\"temp,wilg");
+    return atof(wantedVariable);
   }
 }
 
