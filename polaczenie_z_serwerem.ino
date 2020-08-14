@@ -338,11 +338,11 @@ String httpGETDATA(const char* serverLink) {
   String package = "--";
 
   if (httpReply > 0)  {
-    Serial.print("Sir! Serwer mowi: ");
+    Serial.print("Sir! The server says: ");
     package = http.getString();
   }
   else {
-    Serial.print("Sir! Jest cicho, zbyt cicho: ");
+    Serial.print("Sir! I don't like it. It's quiet too quiet: ");
     Serial.print(httpReply);
   }
   // Vader release him at once
