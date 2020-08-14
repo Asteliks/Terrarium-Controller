@@ -435,10 +435,10 @@ float getHumidityFromSensor() {
 }
 
 void simulateLCD() {
-  if (isInEditMode == true) {
+  if (isInEditMode) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    if (isEditingTemperature == true) {
+    if (isEditingTemperature) {
       // print message
       lcd.print("Temp set to " + String(setTemperature, 2));
     }
@@ -448,7 +448,7 @@ void simulateLCD() {
     }
   }
   else {
-    if (isInSeccondScreen == false) {
+    if (!isInSeccondScreen) {
       lcd.clear();
       lcd.setCursor(0, 0);
       // print message
