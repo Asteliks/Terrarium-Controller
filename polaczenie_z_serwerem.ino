@@ -387,9 +387,8 @@ float getTemperatureFromSensor() {
     }
   }
   float temperatureReadingsSum = currentTemperatureReading, maxTemperatureReading = currentTemperatureReading, minTemperatureReading = currentTemperatureReading;
-  
-  int var = 0;
-  while (var < 17) {
+
+  for (int var = 0; var < 17; var++) {
     currentTemperatureReading = dht.readTemperature();
     if (!isnan(currentTemperatureReading)) {
       temperatureReadingsSum = temperatureReadingsSum + currentTemperatureReading;
@@ -399,7 +398,6 @@ float getTemperatureFromSensor() {
       if (currentTemperatureReading < minTemperatureReading) {
         minTemperatureReading = currentTemperatureReading;
       }
-      var++;
     }
   }
   return (temperatureReadingsSum - maxTemperatureReading - minTemperatureReading) / 16;
@@ -421,8 +419,7 @@ float getHumidityFromSensor() {
 
   float humidityReadingSum = currentHumidityReading, maxHumidityReading = currentHumidityReading, minHumidityReading = currentHumidityReading;
 
-  int var = 0;
-  while (var < 17) {
+  for (int var = 0; var < 17; var++) {
     currentHumidityReading = dht.readHumidity();
     if (!isnan(currentHumidityReading)) {
       humidityReadingSum = humidityReadingSum + currentHumidityReading;
@@ -432,7 +429,6 @@ float getHumidityFromSensor() {
       if (currentHumidityReading < minHumidityReading) {
         minHumidityReading = currentHumidityReading;
       }
-      var++;
     }
   }
   return (humidityReadingSum - maxHumidityReading - minHumidityReading) / 16;
