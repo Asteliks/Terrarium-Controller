@@ -377,7 +377,7 @@ float getIntX(String serverReply, int x) {
 * gets 18 readings of temperature from sensor, eliminates extreme values and returns the average
 */
 float getTemperatureFromSensor() {
-  float temperatureReadingsSum, maxTemperatureReading, minTemperatureReading, currentTemperatureReading;
+  float currentTemperatureReading;
 
   //  gets the first mesurement
   while (true) {
@@ -386,9 +386,8 @@ float getTemperatureFromSensor() {
       break;
     }
   }
-  temperatureReadingsSum = currentTemperatureReading;
-  maxTemperatureReading = currentTemperatureReading;
-  minTemperatureReading = currentTemperatureReading;
+  float temperatureReadingsSum = currentTemperatureReading, maxTemperatureReading = currentTemperatureReading, minTemperatureReading = currentTemperatureReading;
+  
   int var = 0;
   while (var < 17) {
     currentTemperatureReading = dht.readTemperature();
@@ -410,7 +409,7 @@ float getTemperatureFromSensor() {
 * gets 18 readings of humidity from sensor, eliminates extreme values and returns the average
 */
 float getHumidityFromSensor() {
-  float humidityReadingSum, maxHumidityReading, minHumidityReading, currentHumidityReading;
+  float currentHumidityReading;
 
   //  gets the first mesurement
   while (true) {
@@ -419,9 +418,9 @@ float getHumidityFromSensor() {
       break;
     }
   }
-  humidityReadingSum = currentHumidityReading;
-  maxHumidityReading = currentHumidityReading;
-  minHumidityReading = currentHumidityReading;
+
+  float humidityReadingSum = currentHumidityReading, maxHumidityReading = currentHumidityReading, minHumidityReading = currentHumidityReading;
+
   int var = 0;
   while (var < 17) {
     currentHumidityReading = dht.readHumidity();
