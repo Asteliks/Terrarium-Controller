@@ -226,6 +226,7 @@ void setup() {
 
   // initialize LCD
   lcd.init();
+  
   // turn on LCD backlight
   lcd.backlight();
   pinMode(upButton, INPUT_PULLUP);
@@ -266,8 +267,7 @@ void loop() {
     previousServerTime = currentTimeOnCore1;
     //  Chcecking connection with WiFi
     if (WiFi.status() == WL_CONNECTED && isInEditMode == false) {
-      //   do dopisania zbierania zmiennych ustawien
-      String serverReply = httpGETDATA(serverSettingsAdres); //przerabia info z serwera na string
+      String serverReply = httpGETDATA(serverSettingsAdres);
       noInterrupts();
       oldSetTemperature = setTemperature;
       oldSetHumidity = setHumidity;
@@ -284,6 +284,7 @@ void loop() {
       Serial.print("This Task runs on Core: ");
       Serial.println(xPortGetCoreID());
     }
+
     //sending heater and humidifier state on change
     bool isStateChanged = wasHeatingOnLastSent != isHeatingCurrentlyOn || wasHumidifierOnLastSent != isHumidifierCurrentlyOn;
     if (isStateChanged) {
@@ -298,6 +299,7 @@ void loop() {
         http.end();
       }
     }
+
     //sending temperature and humidity on change
     bool isReadingChanged = sentTemperature != temperatureReading || sentHumidity != humidityReading;
     if (isReadingChanged) {
@@ -337,7 +339,6 @@ String httpGETDATA(const char* serverLink) {
 
   if (httpReply > 0)  {
     Serial.print("Sir! Serwer mowi: ");
-    //    Serial.print(httpReply);
     package = http.getString();
   }
   else {
@@ -359,14 +360,9 @@ float getIntX(String serverReply, int x) {
   serverReply.toCharArray(wiadomosc, serverReply.length());
   char* zmienna = strtok(wiadomosc, " :\{\"temp,"); //zwraca pierwsza zmienna
   if (x == 1) {
-    //    Serial.print(zmienna);
-    //    Serial.println(atof("3.4"));
-    //    Serial.println(atof(zmienna));
     return atof(zmienna);
   }
   else {
-    //    while (Tem != NULL){
-    //    Serial.println(Tem);
     zmienna = strtok(NULL, " :\{\"temp,wilg");
     return atof(zmienna);
   }
@@ -439,7 +435,6 @@ void simulateLCD() {
     lcd.clear();
     lcd.setCursor(0, 0);
     if (isEditingTemperature) {
-      // print message
       lcd.print("Temp set to " + String(setTemperature, 2));
     }
     else {
@@ -451,7 +446,6 @@ void simulateLCD() {
     if (!isInSeccondScreen) {
       lcd.clear();
       lcd.setCursor(0, 0);
-      // print message
       lcd.print("Temp " + String(temperatureReading, 1) + "->" + String(setTemperature, 1));
       lcd.setCursor(0, 1);
       lcd.print("Wil " + String(humidityReading, 1) + "%->" + String(setHumidity, 1) + "%");
@@ -459,7 +453,6 @@ void simulateLCD() {
     else {
       lcd.clear();
       lcd.setCursor(0, 0);
-      // print message
       lcd.print("Grzalka" + String(wasHeatingOnLastSent, 2));
       lcd.setCursor(0, 1);
       lcd.print("Pompka" + String(wasHumidifierOnLastSent, 2));
