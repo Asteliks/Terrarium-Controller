@@ -275,7 +275,7 @@ void loop() {
       setHumidity = getIntX(serverReply, 2);
       interrupts();
       if (oldSetTemperature != setTemperature || oldSetHumidity != setHumidity) {
-        simLCD();
+        simulateLCD();
         Serial.print(setTemperature);
         Serial.print(" °C, ");
         Serial.print(setHumidity);
@@ -289,7 +289,7 @@ void loop() {
     if (isStateChanged) {
       wasHeatingOnLastSent = isHeatingCurrentlyOn;
       wasHumidifierOnLastSent = isHumidifierCurrentlyOn;
-      simLCD();
+      simulateLCD();
       if (WiFi.status() == WL_CONNECTED) {
         Serial.println("sending heater and humidifier state to server");
         HTTPClient http;
@@ -303,7 +303,7 @@ void loop() {
     if (isReadingChanged) {
       sentTemperature = temperatureReading;
       sentHumidity = humidityReading;
-      simLCD();
+      simulateLCD();
       if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         Serial.println("sending temperature and humidity to server");
@@ -317,7 +317,7 @@ void loop() {
 
   if (isButtonInteractionLocked) {
     noInterrupts();
-    simLCD();
+    simulateLCD();
     delay (50);
     isButtonInteractionLocked = false;
     interrupts();
@@ -434,7 +434,7 @@ float getHumidityFromSensor() {
   return (humidityReadingSum - maxHumidityReading - minHumidityReading) / 16;
 }
 
-void simLCD() {
+void simulateLCD() {
   if (isInEditMode == true) {
     lcd.clear();
     lcd.setCursor(0, 0);
