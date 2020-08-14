@@ -9,17 +9,19 @@
 
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
-//#include <WebServer.h>
 #include "DHT.h"
 #include <HTTPClient.h>
 
-//wykorzystane piny
+//used pins
 #define heater 23
 #define humidifier 15
 #define upButton 33
 #define downButton 32
 #define setButton 25
 #define nextButton 26
+
+// DHT Sensor
+uint8_t dhtPin = 4;
 
 //PID preset for heater
 float KpTemperature = 0.8;
@@ -41,19 +43,19 @@ LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 //#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 
-/*Podaj SSID & haslo*/
-//const char* ssid = "DEMV";  // Enter SSID here
-//const char* password = "Viki$Madzia2";  //Enter Password here
-const char* ssid = "KIAE";  // Enter SSID here
-const char* password = "K3N4U5F42X";  //Enter Password here
+//WiFi connection
+const char* ssid = "WiFiName";  // Enter SSID here
+const char* password = "123456789";  //Enter Password here
 
-//linki interakcji z serwerem
-const char* serverSettingsAdres = "https://esp32-terrarium-control.now.sh/getConfig";
-const char* serverNameHumi = "http://192.168.4.1/humidity";
-const char* serverNamePres = "http://192.168.4.1/pressure";
-
-// DHT Sensor
-uint8_t dhtPin = 4;
+//server interactions links - change your server address here
+const char* serverGetConnfigAddress = "https://esp32-terrarium-control.your.page/getConfig";
+const char* serverSendConfigAddress = "https://esp32-terrarium-control.your.page/config?";
+const char* serverSendStateAddress = "https://esp32-terrarium-control.your.page/stateChange?";
+const char* serverSendReadingsgAddress = "https://esp32-terrarium-control.your.page/reading?";
+const char* heaterLink = "grzalka=";
+const char* humidifierLink = "pompka=";
+const char* temperatureLink = "temp=";
+const char* humidityLink = "wilg=";
 
 // Initialize DHT sensor.
 DHT dht(dhtPin, DHTTYPE);
@@ -110,7 +112,6 @@ void IRAM_ATTR next() {
   }
 }
 
-
 //time logic
 const long minRefreshTime = 5*1000, pidRefreshTime = 5*1000, serverRefreshTime = 5*1000;
 
@@ -129,11 +130,11 @@ void codeForTask1( void * parameter )
     //    Temperature and humidity reading
     temperatureReading = getTemperatureFromSensor();
     humidityReading = getHumidityFromSensor();
-    Serial.print("Sir! Czytam: ");
+    Serial.print("Sir! Reading: ");
     Serial.print(temperatureReading);
     Serial.print(" °C, ");
     Serial.print(humidityReading);
-    Serial.print(" %. Różnica: ");
+    Serial.print(" %. Difference: ");
     Serial.print(error(setTemperature, temperatureReading));
     Serial.print(" °C, ");
     Serial.print(error(setHumidity, humidityReading));
@@ -258,7 +259,7 @@ void loop() {
   if (isNewSettingToSend && !isInEditMode) {
     isNewSettingToSend = false;
     HTTPClient http;
-    http.begin("https://esp32-terrarium-control.now.sh/config?temp=" + String(setTemperature, 2) + "&wilg=" + String(setHumidity, 2));
+    http.begin(serverSendConfigAddress + temperatureLink + String(setTemperature, 2) + "&" + humidityLink + String(setHumidity, 2));
     Serial.println("Sending to server temperature set to: " + String(setTemperature, 2) + "and humidity set to: " + String(setHumidity, 2));
     http.GET();
     http.end();
@@ -267,7 +268,7 @@ void loop() {
     previousServerTime = currentTimeOnCore1;
     //  Chcecking connection with WiFi
     if (WiFi.status() == WL_CONNECTED && isInEditMode == false) {
-      String serverReply = httpGETDATA(serverSettingsAdres);
+      String serverReply = httpGETDATA(serverGetConnfigAddress);
       noInterrupts();
       oldSetTemperature = setTemperature;
       oldSetHumidity = setHumidity;
@@ -294,7 +295,7 @@ void loop() {
       if (WiFi.status() == WL_CONNECTED) {
         Serial.println("sending heater and humidifier state to server");
         HTTPClient http;
-        http.begin("https://esp32-terrarium-control.now.sh/stateChange?grzalka=" + String(wasHeatingOnLastSent ? 1 : 0, 0) + "&pompka=" + String(wasHumidifierOnLastSent ? 1 : 0, 0));
+        http.begin(serverSendStateAddress + heaterLink + String(wasHeatingOnLastSent ? 1 : 0, 0) + "&" + humidifierLink + String(wasHumidifierOnLastSent ? 1 : 0, 0));
         http.GET();
         http.end();
       }
@@ -309,7 +310,7 @@ void loop() {
       if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         Serial.println("sending temperature and humidity to server");
-        http.begin("https://esp32-terrarium-control.now.sh/reading?temp=" + String(temperatureReading, 2) + "&wilg=" + String(humidityReading, 2));
+        http.begin(serverSendReadingsgAddress + temperatureLink + String(temperatureReading, 2) + "&" + humidityLink + String(humidityReading, 2));
         http.GET();
         http.end();
       }
@@ -430,6 +431,9 @@ float getHumidityFromSensor() {
   return (humidityReadingSum - maxHumidityReading - minHumidityReading) / 16;
 }
 
+/*
+* function responsible for proper message display
+*/
 void simulateLCD() {
   if (isInEditMode) {
     lcd.clear();
