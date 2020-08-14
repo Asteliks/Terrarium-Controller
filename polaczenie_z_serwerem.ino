@@ -16,10 +16,10 @@
 //wykorzystane piny
 #define heater 23
 #define humidifier 15
-#define UP 33
-#define DOWN 32
-#define SET 25
-#define NEXT 26
+#define upButton 33
+#define downButton 32
+#define setButton 25
+#define nextButton 26
 
 //PID preset for heater
 float KpTemperature = 0.8;
@@ -229,13 +229,13 @@ void setup() {
   // turn on LCD backlight
   lcd.backlight();
   pinMode(upButton, INPUT_PULLUP);
-  pinMode(DOWN, INPUT_PULLUP);
-  pinMode(SET, INPUT_PULLUP);
-  pinMode(NEXT, INPUT_PULLUP);
+  pinMode(downButton, INPUT_PULLUP);
+  pinMode(setButton, INPUT_PULLUP);
+  pinMode(nextButton, INPUT_PULLUP);
   attachInterrupt(upButton, up, FALLING);
-  attachInterrupt(DOWN, down, FALLING);
-  attachInterrupt(SET, set, FALLING);
-  attachInterrupt(NEXT, next, FALLING);
+  attachInterrupt(downButton, down, FALLING);
+  attachInterrupt(setButton, set, FALLING);
+  attachInterrupt(nextButton, next, FALLING);
 
   xTaskCreatePinnedToCore(
     codeForTask1,            /* Task function. */
