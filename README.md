@@ -18,3 +18,11 @@ Basically, the ESP32 controls the climate of our terrariums using a PID controll
 -- to send new locally defined target states of temperature and humidity
 -- receive new target states of temperature and humidity from an online user
 - can execute order 66 - approved by Darth Sidious himself [Alpha, not present in the public build]
+
+# The project on a breadboard
+
+![alt text](https://github.com/Asteliks/esp32-terrarium-control-board/blob/test1/IMG_3757.JPG)
+![alt text](https://github.com/Asteliks/esp32-terrarium-control-board/blob/test1/IMG_3758.JPG)
+![alt text](https://github.com/Asteliks/esp32-terrarium-control-board/blob/test1/IMG_3759.JPG)
+![alt text](https://github.com/Asteliks/esp32-terrarium-control-board/blob/test1/IMG_3760.JPG)
+note: I've used LEDs to depict the state of the heater and humidifier relays
