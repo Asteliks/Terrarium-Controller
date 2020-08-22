@@ -2,7 +2,7 @@
 
 This is a simple microcontroller terrariums climate control project. It consists of three parts:
 - ESP32 program written in the Arduino IDF
-- Server-side code (to be published)
+- Server-side code
 - Android app for remote control (to be published)
 
 # ESP32 program
