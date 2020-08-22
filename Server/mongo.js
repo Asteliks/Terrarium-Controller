@@ -1,5 +1,5 @@
 const MongoClient = require('mongodb').MongoClient
-const url = 'mongodb+srv://ESP:sots@esp32-terrarium-control-71qmj.mongodb.net/test'
+const url = 'set up your server link here'
 
 const dbName = 'ESP'
 function MyMongo() {
