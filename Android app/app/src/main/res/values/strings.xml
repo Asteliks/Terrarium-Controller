@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Terrarium</string>
+    <string name="butOdswiez">Odśwież</string>
+    <string name="butOdswiezWykres">Odśwież dane</string>
+    <string name="butActSec">Wykresy</string>
+    <string name="butSend">Wyślij</string>
+    <string name="SwButTemp">Temperatura</string>
+    <string name="SwButGrz">Grzałka</string>
+    <string name="SwButWilg">Wilgotność</string>
+    <string name="SwButPomp">Pompa</string>
+    <string name="textTemp1">Temperatura: </string>
+    <string name="textTempZadana">Zadana: </string>
+    <string name="textTempAktualna">Aktualna: </string>
+    <string name="textTemp2">0.0</string>
+    <string name="textTempAK">0.0</string>
+    <string name="textWilg1">Wilgotność: </string>
+    <string name="textWilgZadana">Zadana: </string>
+    <string name="textWilgAktualna">Aktualna: </string>
+    <string name="textWilg2">0.0</string>
+    <string name="textWilgAK">0.0</string>
+    <string name="butNastawy">Nastawy</string>
+    <string name="textNameValue">Wartość</string>
+
+    <string name="rbday">7 dni</string>
+    <string name="rbmonth">miesiąc</string>
+    <string name="rball">wszystko</string>
+</resources>

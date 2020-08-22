@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_horizontal"
+    tools:context=".SecondActivity">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/barChart"
+                android:layout_width="match_parent"
+                android:layout_height="536dp"
+                android:padding="5dp">
+
+            </com.github.mikephil.charting.charts.LineChart>
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/ButOdsDane"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="10dp"
+                    android:text="@string/butOdswiezWykres" />
+
+                <Switch
+                    android:id="@+id/switchTemp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:checked="true"
+                    android:padding="10dp"
+                    android:text="@string/SwButTemp" />
+
+                <Switch
+                    android:id="@+id/switchWilg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="10dp"
+                    android:text="@string/SwButWilg" />
+
+                <Switch
+                    android:id="@+id/switchPomp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="10dp"
+                    android:text="@string/SwButPomp" />
+
+                <Switch
+                    android:id="@+id/switchGrz"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:padding="10dp"
+                    android:text="@string/SwButGrz" />
+
+            </RadioGroup>
+
+            <RadioGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/RBday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:checked="true"
+                    android:padding="15dp"
+                    android:text="@string/rbday" />
+
+                <RadioButton
+                    android:id="@+id/RBmonth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="15dp"
+                    android:text="@string/rbmonth" />
+
+                <RadioButton
+                    android:id="@+id/RBall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="15dp"
+                    android:text="@string/rball" />
+            </RadioGroup>
+
+        </LinearLayout>
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,2 @@
+rootProject.name='Terrarium'
+include ':app'
