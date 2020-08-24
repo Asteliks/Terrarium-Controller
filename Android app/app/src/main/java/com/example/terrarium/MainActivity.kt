@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
     }
     // funkcja  czytajaca dane z getConfig
     private fun jsonParseGetConfig(){
-        val url = "https://esp32-terrarium-control.now.sh/getConfig"
+        val url = getString(R.string.getConfig)
         val request = JsonObjectRequest(Request.Method.GET, url, null, Response.Listener {
                 response ->try {
             jsontemp = response.getString("temp")
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         listTemp.clear()
         listWilg.clear()
         listDate_T_W.clear()
-        val url = "https://esp32-terrarium-control.now.sh/getReadings"
+        val url = getString(R.string.getReadings)
         val request = JsonArrayRequest(Request.Method.GET, url, null, Response.Listener {
                 response ->try {
             for (count in 0 until response.length()) {

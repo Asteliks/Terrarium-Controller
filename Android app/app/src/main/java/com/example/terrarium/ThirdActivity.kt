@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.activity_third.*
 
 class ThirdActivity : AppCompatActivity() {
     private var requestQueue: RequestQueue? = null
-    var url = "https://esp32-terrarium-control.now.sh/config?temp=32"
+    var url = getString(R.string.temperature)+"32"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_third)
@@ -23,11 +23,11 @@ class ThirdActivity : AppCompatActivity() {
             val ValTemp: String = editTextTemp.text.toString()
             val ValWilg: String = editTextWilg.text.toString()
             if(ValTemp.isNullOrEmpty() && !ValWilg.isNullOrEmpty()){
-                url = "https://esp32-terrarium-control.now.sh/config?wilg="+ValWilg
+                url = getString(R.string.humidity)+ValWilg
                 SendData()
             }
             else if( ValWilg.isNullOrEmpty() && !ValTemp.isNullOrEmpty()){
-                url = "https://esp32-terrarium-control.now.sh/config?temp="+ValTemp
+                url = getString(R.string.temperature)+ValTemp
                 SendData()
             }
             else if (ValTemp.isNullOrEmpty() && ValWilg.isNullOrEmpty()) {
@@ -35,7 +35,7 @@ class ThirdActivity : AppCompatActivity() {
                 myToast.show()
             }
             else{
-                url = "https://esp32-terrarium-control.now.sh/config?temp="+ValTemp+"&wilg="+ValWilg
+                url = getString(R.string.temperature)+ValTemp+"&wilg="+ValWilg
                 SendData()
             }
 

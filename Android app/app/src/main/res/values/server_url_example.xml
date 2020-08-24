@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<!--  Rename resource name by removing word Example
+      e.g. rename getConfigExample to getConfig etc.
+-->
+    <string name="getConfigExample">https://your-link-here/getConfig</string>
+    <string name="getReadingsExample">https://your-link-here/getReadings</string>
+    <string name="getStateChangesExample">https://your-link-here/getStateChanges"</string>
+    <string name="temperatureExample">"https://your-link-here/config?temp="</string>
+    <string name="humidityExample">"https://your-link-here/config?wilg="</string>
+</resources>
