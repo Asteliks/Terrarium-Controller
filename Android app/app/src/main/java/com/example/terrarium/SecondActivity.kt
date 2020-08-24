@@ -156,7 +156,7 @@ class SecondActivity : AppCompatActivity() {
         listDate_T_W.clear()
         listDATY.clear()
 
-        val url = "https://esp32-terrarium-control.now.sh/getReadings"
+        val url = getString(R.string.getReadings)
         val request =
             JsonArrayRequest(Request.Method.GET, url, null, Response.Listener { response ->
                 try {
@@ -186,7 +186,7 @@ class SecondActivity : AppCompatActivity() {
         listPomp.clear()
         listDate_G_P.clear()
         listDATY2.clear()
-        val url = "https://esp32-terrarium-control.now.sh/getStateChanges"
+        val url = getString(R.string.getStateChanges)
         val request =
             JsonArrayRequest(Request.Method.GET, url, null, Response.Listener { response ->
                 try {
