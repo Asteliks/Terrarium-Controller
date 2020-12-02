@@ -23,6 +23,13 @@
 // DHT Sensor
 uint8_t dhtPin = 4;
 
+// Controller mode
+int controlMode = 1; //1 = PID, 2 = on-off
+
+// on-off controller settings
+float heaterHysteresis = 1;
+float humidifierHysteresis = 1;
+
 //PID preset for heater
 float KpTemperature = 0.8;
 float KiTemperature = 0.001;
@@ -113,7 +120,7 @@ void IRAM_ATTR next() {
 }
 
 //time logic
-const long minRefreshTime = 5*1000, pidRefreshTime = 5*1000, serverRefreshTime = 5*1000;
+const long minRefreshTime = 5 * 1000, pidRefreshTime = 5 * 1000, serverRefreshTime = 5 * 1000;
 
 unsigned long previousServerTime = 0, previousPIDTemperatureTime = 0, previousPIDHumidityTime = 0, deltaTime;
 
@@ -123,75 +130,106 @@ TaskHandle_t Task1;
 void codeForTask1( void * parameter )
 {
   for (;;) {
-    unsigned long currentTimeOnCore0 = millis();
 
-    delay (3000);
+    switch (controlMode) {
+      case 1:
+        unsigned long currentTimeOnCore0 = millis();
 
-    //    Temperature and humidity reading
-    temperatureReading = getTemperatureFromSensor();
-    humidityReading = getHumidityFromSensor();
-    Serial.print("Sir! Reading: ");
-    Serial.print(temperatureReading);
-    Serial.print(" °C, ");
-    Serial.print(humidityReading);
-    Serial.print(" %. Difference: ");
-    Serial.print(error(setTemperature, temperatureReading));
-    Serial.print(" °C, ");
-    Serial.print(error(setHumidity, humidityReading));
-    Serial.print(" %");
-    Serial.print("This Task runs on Core: ");
-    Serial.println(xPortGetCoreID());
+        delay (3000);
 
-    //    PID for temperature
-    currentTimeOnCore0 = millis();
-    deltaTime = (currentTimeOnCore0 - previousPIDTemperatureTime) / 1000;
-    previousPIDTemperatureTime = currentTimeOnCore0;
-    pidProportionTemperature = error(setTemperature, temperatureReading);
-    pidIntegralTemperature = (pidProportionTemperature * deltaTime) + pidIntegralTemperature;
-    pidDerivativeTemperature = (pidProportionTemperature - previousTemperature) / deltaTime;
-    previousTemperature = pidProportionTemperature;
-    pidTemperature = (KpTemperature * pidProportionTemperature) + (KiTemperature * pidIntegralTemperature) + (KdTemperature * pidDerivativeTemperature);
-    if (pidTemperature > 1) {
-      pidTemperature = 1;
-      pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
-    }
-    else if (pidTemperature < 0) {
-      pidTemperature = 0;
-      pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
-    }
-    if (pidTemperature > 0.2) {
-      digitalWrite(heater, HIGH);
-      isHeatingCurrentlyOn = true;
-    }
-    else {
-      digitalWrite(heater, LOW);
-      isHeatingCurrentlyOn = false;
-    }
+        //    Temperature and humidity reading
+        temperatureReading = getTemperatureFromSensor();
+        humidityReading = getHumidityFromSensor();
+        Serial.print("Sir! Reading: ");
+        Serial.print(temperatureReading);
+        Serial.print(" °C, ");
+        Serial.print(humidityReading);
+        Serial.print(" %. Difference: ");
+        Serial.print(error(setTemperature, temperatureReading));
+        Serial.print(" °C, ");
+        Serial.print(error(setHumidity, humidityReading));
+        Serial.print(" %");
+        Serial.print("This Task runs on Core: ");
+        Serial.println(xPortGetCoreID());
 
-    //    PID for humidity
-    currentTimeOnCore0 = millis();
-    deltaTime = (currentTimeOnCore0 - previousPIDHumidityTime) / 1000;
-    previousPIDHumidityTime = currentTimeOnCore0;
-    pidProportionHumidity = error(setHumidity, humidityReading);
-    pidIntegralHumidity = (pidProportionHumidity * deltaTime) + pidIntegralHumidity;
-    pidDerivativeHumidity = (pidProportionHumidity - previousHumidity) / deltaTime;
-    previousHumidity = pidProportionHumidity;
-    pidHumidity = (KpHumidity * pidProportionHumidity) + (KiHumidity * pidIntegralHumidity) + (KdHumidity * pidDerivativeHumidity);
-    if (pidHumidity > 1) {
-      pidHumidity = 1;
-      pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
-    }
-    else if (pidHumidity < 0) {
-      pidHumidity = 0;
-      pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
-    }
-    if (pidHumidity > 0.2) {
-      digitalWrite(humidifier, HIGH);
-      isHumidifierCurrentlyOn = true;
-    }
-    else {
-      digitalWrite(humidifier, LOW);
-      isHumidifierCurrentlyOn = false;
+        //    PID for temperature
+        currentTimeOnCore0 = millis();
+        deltaTime = (currentTimeOnCore0 - previousPIDTemperatureTime) / 1000;
+        previousPIDTemperatureTime = currentTimeOnCore0;
+        pidProportionTemperature = error(setTemperature, temperatureReading);
+        pidIntegralTemperature = (pidProportionTemperature * deltaTime) + pidIntegralTemperature;
+        pidDerivativeTemperature = (pidProportionTemperature - previousTemperature) / deltaTime;
+        previousTemperature = pidProportionTemperature;
+        pidTemperature = (KpTemperature * pidProportionTemperature) + (KiTemperature * pidIntegralTemperature) + (KdTemperature * pidDerivativeTemperature);
+        if (pidTemperature > 1) {
+          pidTemperature = 1;
+          pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
+        }
+        else if (pidTemperature < 0) {
+          pidTemperature = 0;
+          pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
+        }
+        if (pidTemperature > 0.2) {
+          digitalWrite(heater, HIGH);
+          isHeatingCurrentlyOn = true;
+        }
+        else {
+          digitalWrite(heater, LOW);
+          isHeatingCurrentlyOn = false;
+        }
+
+        //    PID for humidity
+        currentTimeOnCore0 = millis();
+        deltaTime = (currentTimeOnCore0 - previousPIDHumidityTime) / 1000;
+        previousPIDHumidityTime = currentTimeOnCore0;
+        pidProportionHumidity = error(setHumidity, humidityReading);
+        pidIntegralHumidity = (pidProportionHumidity * deltaTime) + pidIntegralHumidity;
+        pidDerivativeHumidity = (pidProportionHumidity - previousHumidity) / deltaTime;
+        previousHumidity = pidProportionHumidity;
+        pidHumidity = (KpHumidity * pidProportionHumidity) + (KiHumidity * pidIntegralHumidity) + (KdHumidity * pidDerivativeHumidity);
+        if (pidHumidity > 1) {
+          pidHumidity = 1;
+          pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
+        }
+        else if (pidHumidity < 0) {
+          pidHumidity = 0;
+          pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
+        }
+        if (pidHumidity > 0.2) {
+          digitalWrite(humidifier, HIGH);
+          isHumidifierCurrentlyOn = true;
+        }
+        else {
+          digitalWrite(humidifier, LOW);
+          isHumidifierCurrentlyOn = false;
+        }
+        break;
+      case 2:
+        delay(3000);
+
+        // on - off heater
+        if (isHeatingCurrentlyOn && error(setTemperature, temperatureReading) + heaterHysteresis < 0) {
+          digitalWrite(heater, LOW);
+          isHeatingCurrentlyOn = false;
+        }
+        else if (!isHeatingCurrentlyOn && error(setTemperature, temperatureReading) - heaterHysteresis > 0)
+        {
+          digitalWrite(heater, HIGH);
+          isHeatingCurrentlyOn = true;
+        }
+
+        // on - off humidifier
+        if (isHumidifierCurrentlyOn && error(setHumidity, humidityReading) + humidifierHysteresis < 0) {
+          digitalWrite(humidifier, LOW);
+          isHumidifierCurrentlyOn = false;
+        }
+        else if (!isHumidifierCurrentlyOn && error(setHumidity, humidityReading) - humidifierHysteresis > 0)
+        {
+          digitalWrite(humidifier, HIGH);
+          isHumidifierCurrentlyOn = true;
+        }
+
+        break;
     }
   }
 }
@@ -353,7 +391,7 @@ String httpGETDATA(const char* serverLink) {
 }
 
 /*
-* gets the number x int from serverReply
+  gets the number x int from serverReply
 */
 float getIntX(String serverReply, int x) {
   serverReply = serverReply.substring(3, serverReply.length()); //removes the first 3 characters from left
@@ -371,7 +409,7 @@ float getIntX(String serverReply, int x) {
 
 
 /*
-* gets 18 readings of temperature from sensor, eliminates extreme values and returns the average
+  gets 18 readings of temperature from sensor, eliminates extreme values and returns the average
 */
 float getTemperatureFromSensor() {
   float currentTemperatureReading;
@@ -401,7 +439,7 @@ float getTemperatureFromSensor() {
 }
 
 /*
-* gets 18 readings of humidity from sensor, eliminates extreme values and returns the average
+  gets 18 readings of humidity from sensor, eliminates extreme values and returns the average
 */
 float getHumidityFromSensor() {
   float currentHumidityReading;
@@ -432,7 +470,7 @@ float getHumidityFromSensor() {
 }
 
 /*
-* function responsible for proper message display
+  function responsible for proper message display
 */
 void simulateLCD() {
   if (isInEditMode) {
