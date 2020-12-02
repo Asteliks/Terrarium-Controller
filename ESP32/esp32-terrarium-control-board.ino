@@ -1,12 +1,3 @@
-// TODO notes
-// + PID - gotowe
-// + Wysyłanie pomiarów i zmian stanów - gotowe
-// + Histereza (+/- do włącz wyłącz) - gotowe
-// + zbieraj 18 pomiarów usuwaj skrajne max, min i licz średnią - gotowe
-// + upiększ kod i zoptymalizuj
-// + korzystanie z 2 rdzeni - gotowe
-// + obsluga ekranu i przyciskow - gotowe
-
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
 #include "DHT.h"
