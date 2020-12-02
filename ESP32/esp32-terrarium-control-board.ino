@@ -50,6 +50,8 @@ const char* serverGetConnfigAddress = "https://esp32-terrarium-control.your.page
 const char* serverSendConfigAddress = "https://esp32-terrarium-control.your.page/config?";
 const char* serverSendStateAddress = "https://esp32-terrarium-control.your.page/stateChange?";
 const char* serverSendReadingsgAddress = "https://esp32-terrarium-control.your.page/reading?";
+const char* serverGetControlModeAddress = "https://esp32-terrarium-control.your.page/getMode";
+const char* serverSendControlModeAddress = "https://esp32-terrarium-control.your.page/mode?";
 const char* heaterLink = "grzalka=";
 const char* humidifierLink = "pompka=";
 const char* temperatureLink = "temp=";
@@ -297,6 +299,7 @@ void loop() {
     previousServerTime = currentTimeOnCore1;
     //  Chcecking connection with WiFi
     if (WiFi.status() == WL_CONNECTED && isInEditMode == false) {
+      controlMode = httpGETDATA(serverGetControlModeAddress);
       String serverReply = httpGETDATA(serverGetConnfigAddress);
       noInterrupts();
       oldSetTemperature = setTemperature;
