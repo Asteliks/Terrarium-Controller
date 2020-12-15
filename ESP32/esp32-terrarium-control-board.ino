@@ -72,25 +72,30 @@ static int dataScreens = 1, editScreens = 11;
 void IRAM_ATTR up() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    if (isInEditMode) {
-      if (isEditingTemperature) {
-        setTemperature += 0.5;
-      }
-      else {
+    switch (isOnScreen) {
+      case 10:
+        if (isEditingTemperature) {
+          setTemperature += 0.5;
+        }
+        else {
         setHumidity += 0.5;
-      }
+        }
+        break;
     }
   }
 }
 void IRAM_ATTR down() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    if (isInEditMode) {
-      if (isEditingTemperature) {
-        setTemperature -= 0.5;
-      }
-      else {
+    switch (isOnScreen) {
+      case 10:
+        if (isEditingTemperature) {
+          setTemperature -= 0.5;
+        }
+        else {
         setHumidity -= 0.5;
+        }
+        break;
       }
     }
   }
