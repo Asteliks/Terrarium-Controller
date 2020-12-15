@@ -65,49 +65,101 @@ volatile double oldSetTemperature, oldSetHumidity, setTemperature, setHumidity;
 float pidIntegralTemperature, pidIntegralHumidity, pidDerivativeTemperature, previousTemperature, pidDerivativeHumidity, previousHumidity, pidProportionTemperature, pidProportionHumidity, pidTemperature, pidHumidity;
 bool isHeatingCurrentlyOn, wasHeatingOnLastSent, isHumidifierCurrentlyOn, wasHumidifierOnLastSent;
 volatile bool isInSeccondScreen = false, isButtonInteractionLocked = false, isInEditMode = false, isEditingTemperature = true, isNewSettingToSend = false;
+volatile int isOnScreen = 0;
+static int dataScreens = 1, editScreens = 11;
 
 //button logic
 void IRAM_ATTR up() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    if (isInEditMode) {
-      if (isEditingTemperature) {
-        setTemperature += 0.5;
-      }
-      else {
-        setHumidity += 0.5;
-      }
+    switch (isOnScreen) {
+      case 10:
+        if (isEditingTemperature) {
+          setTemperature += 0.5;
+        }
+        else {
+          setHumidity += 0.5;
+        }
+        break;
+      case 11:
+        if (controlMode >= 2) {
+          controlMode = 1;
+        }
+        else
+        {
+          controlMode += 1;
+        }
     }
   }
 }
 void IRAM_ATTR down() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    if (isInEditMode) {
-      if (isEditingTemperature) {
-        setTemperature -= 0.5;
-      }
-      else {
-        setHumidity -= 0.5;
-      }
+    switch (isOnScreen) {
+      case 10:
+        if (isEditingTemperature) {
+          setTemperature -= 0.5;
+        }
+        else {
+          setHumidity -= 0.5;
+        }
+        break;
+      case 11:
+        if (controlMode <= 1) {
+          controlMode = 2;
+        }
+        else
+        {
+          controlMode -= 1;
+        }
     }
   }
 }
 void IRAM_ATTR set() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    isInEditMode = !isInEditMode;
-    isNewSettingToSend = true;
+    switch (isOnScreen)
+    {
+      case 10:
+        isOnScreen = 11;
+        break;
+
+      case 11:
+        isOnScreen = 0;
+        isInEditMode = false;
+        break;
+
+      default:
+        isOnScreen = 10;
+        isInEditMode = true;
+        isNewSettingToSend = true;
+        break;
+    }
   }
 }
 void IRAM_ATTR next() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    if (isInEditMode) {
-      isEditingTemperature = !isEditingTemperature;
-    }
-    else {
-      isInSeccondScreen = !isInSeccondScreen;
+    switch (isOnScreen)
+    {
+      case 0:
+        isOnScreen = 1;
+        break;
+
+      case 1:
+        isOnScreen = 0;
+        break;
+
+      case 10:
+        isEditingTemperature = !isEditingTemperature;
+        break;
+
+      case 11:
+        /* code */
+        break;
+
+      default:
+        break;
     }
   }
 }
@@ -126,103 +178,108 @@ void codeForTask1( void * parameter )
 
     switch (controlMode) {
       case 1:
-        unsigned long currentTimeOnCore0 = millis();
+        {
+          unsigned long currentTimeOnCore0 = millis();
 
-        delay (3000);
+          delay (3000);
 
-        //    Temperature and humidity reading
-        temperatureReading = getTemperatureFromSensor();
-        humidityReading = getHumidityFromSensor();
-        Serial.print("Sir! Reading: ");
-        Serial.print(temperatureReading);
-        Serial.print(" °C, ");
-        Serial.print(humidityReading);
-        Serial.print(" %. Difference: ");
-        Serial.print(error(setTemperature, temperatureReading));
-        Serial.print(" °C, ");
-        Serial.print(error(setHumidity, humidityReading));
-        Serial.print(" %");
-        Serial.print("This Task runs on Core: ");
-        Serial.println(xPortGetCoreID());
+          //    Temperature and humidity reading
+          temperatureReading = getTemperatureFromSensor();
+          humidityReading = getHumidityFromSensor();
+          Serial.print("Sir! Reading: ");
+          Serial.print(temperatureReading);
+          Serial.print(" °C, ");
+          Serial.print(humidityReading);
+          Serial.print(" %. Difference: ");
+          Serial.print(error(setTemperature, temperatureReading));
+          Serial.print(" °C, ");
+          Serial.print(error(setHumidity, humidityReading));
+          Serial.print(" %");
+          Serial.print("This Task runs on Core: ");
+          Serial.println(xPortGetCoreID());
 
-        //    PID for temperature
-        currentTimeOnCore0 = millis();
-        deltaTime = (currentTimeOnCore0 - previousPIDTemperatureTime) / 1000;
-        previousPIDTemperatureTime = currentTimeOnCore0;
-        pidProportionTemperature = error(setTemperature, temperatureReading);
-        pidIntegralTemperature = (pidProportionTemperature * deltaTime) + pidIntegralTemperature;
-        pidDerivativeTemperature = (pidProportionTemperature - previousTemperature) / deltaTime;
-        previousTemperature = pidProportionTemperature;
-        pidTemperature = (KpTemperature * pidProportionTemperature) + (KiTemperature * pidIntegralTemperature) + (KdTemperature * pidDerivativeTemperature);
-        if (pidTemperature > 1) {
-          pidTemperature = 1;
-          pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
-        }
-        else if (pidTemperature < 0) {
-          pidTemperature = 0;
-          pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
-        }
-        if (pidTemperature > 0.2) {
-          digitalWrite(heater, HIGH);
-          isHeatingCurrentlyOn = true;
-        }
-        else {
-          digitalWrite(heater, LOW);
-          isHeatingCurrentlyOn = false;
+          //    PID for temperature
+          currentTimeOnCore0 = millis();
+          deltaTime = (currentTimeOnCore0 - previousPIDTemperatureTime) / 1000;
+          previousPIDTemperatureTime = currentTimeOnCore0;
+          pidProportionTemperature = error(setTemperature, temperatureReading);
+          pidIntegralTemperature = (pidProportionTemperature * deltaTime) + pidIntegralTemperature;
+          pidDerivativeTemperature = (pidProportionTemperature - previousTemperature) / deltaTime;
+          previousTemperature = pidProportionTemperature;
+          pidTemperature = (KpTemperature * pidProportionTemperature) + (KiTemperature * pidIntegralTemperature) + (KdTemperature * pidDerivativeTemperature);
+          if (pidTemperature > 1) {
+            pidTemperature = 1;
+            pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
+          }
+          else if (pidTemperature < 0) {
+            pidTemperature = 0;
+            pidIntegralTemperature = pidIntegralTemperature - (pidProportionTemperature * deltaTime);
+          }
+          if (pidTemperature > 0.2) {
+            digitalWrite(heater, HIGH);
+            isHeatingCurrentlyOn = true;
+          }
+          else {
+            digitalWrite(heater, LOW);
+            isHeatingCurrentlyOn = false;
+          }
+
+          //    PID for humidity
+          currentTimeOnCore0 = millis();
+          deltaTime = (currentTimeOnCore0 - previousPIDHumidityTime) / 1000;
+          previousPIDHumidityTime = currentTimeOnCore0;
+          pidProportionHumidity = error(setHumidity, humidityReading);
+          pidIntegralHumidity = (pidProportionHumidity * deltaTime) + pidIntegralHumidity;
+          pidDerivativeHumidity = (pidProportionHumidity - previousHumidity) / deltaTime;
+          previousHumidity = pidProportionHumidity;
+          pidHumidity = (KpHumidity * pidProportionHumidity) + (KiHumidity * pidIntegralHumidity) + (KdHumidity * pidDerivativeHumidity);
+          if (pidHumidity > 1) {
+            pidHumidity = 1;
+            pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
+          }
+          else if (pidHumidity < 0) {
+            pidHumidity = 0;
+            pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
+          }
+          if (pidHumidity > 0.2) {
+            digitalWrite(humidifier, HIGH);
+            isHumidifierCurrentlyOn = true;
+          }
+          else {
+            digitalWrite(humidifier, LOW);
+            isHumidifierCurrentlyOn = false;
+          }
+          break;
         }
 
-        //    PID for humidity
-        currentTimeOnCore0 = millis();
-        deltaTime = (currentTimeOnCore0 - previousPIDHumidityTime) / 1000;
-        previousPIDHumidityTime = currentTimeOnCore0;
-        pidProportionHumidity = error(setHumidity, humidityReading);
-        pidIntegralHumidity = (pidProportionHumidity * deltaTime) + pidIntegralHumidity;
-        pidDerivativeHumidity = (pidProportionHumidity - previousHumidity) / deltaTime;
-        previousHumidity = pidProportionHumidity;
-        pidHumidity = (KpHumidity * pidProportionHumidity) + (KiHumidity * pidIntegralHumidity) + (KdHumidity * pidDerivativeHumidity);
-        if (pidHumidity > 1) {
-          pidHumidity = 1;
-          pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
-        }
-        else if (pidHumidity < 0) {
-          pidHumidity = 0;
-          pidIntegralHumidity = pidIntegralHumidity - (pidProportionHumidity * deltaTime);
-        }
-        if (pidHumidity > 0.2) {
-          digitalWrite(humidifier, HIGH);
-          isHumidifierCurrentlyOn = true;
-        }
-        else {
-          digitalWrite(humidifier, LOW);
-          isHumidifierCurrentlyOn = false;
-        }
-        break;
       case 2:
-        delay(3000);
-
-        // on - off heater
-        if (isHeatingCurrentlyOn && error(setTemperature, temperatureReading) + heaterHysteresis < 0) {
-          digitalWrite(heater, LOW);
-          isHeatingCurrentlyOn = false;
-        }
-        else if (!isHeatingCurrentlyOn && error(setTemperature, temperatureReading) - heaterHysteresis > 0)
         {
-          digitalWrite(heater, HIGH);
-          isHeatingCurrentlyOn = true;
+          delay(3000);
+
+          // on - off heater
+          if (isHeatingCurrentlyOn && error(setTemperature, temperatureReading) + heaterHysteresis < 0) {
+            digitalWrite(heater, LOW);
+            isHeatingCurrentlyOn = false;
+          }
+          else if (!isHeatingCurrentlyOn && error(setTemperature, temperatureReading) - heaterHysteresis > 0)
+          {
+            digitalWrite(heater, HIGH);
+            isHeatingCurrentlyOn = true;
+          }
+
+          // on - off humidifier
+          if (isHumidifierCurrentlyOn && error(setHumidity, humidityReading) + humidifierHysteresis < 0) {
+            digitalWrite(humidifier, LOW);
+            isHumidifierCurrentlyOn = false;
+          }
+          else if (!isHumidifierCurrentlyOn && error(setHumidity, humidityReading) - humidifierHysteresis > 0)
+          {
+            digitalWrite(humidifier, HIGH);
+            isHumidifierCurrentlyOn = true;
+          }
+          break;
         }
 
-        // on - off humidifier
-        if (isHumidifierCurrentlyOn && error(setHumidity, humidityReading) + humidifierHysteresis < 0) {
-          digitalWrite(humidifier, LOW);
-          isHumidifierCurrentlyOn = false;
-        }
-        else if (!isHumidifierCurrentlyOn && error(setHumidity, humidityReading) - humidifierHysteresis > 0)
-        {
-          digitalWrite(humidifier, HIGH);
-          isHumidifierCurrentlyOn = true;
-        }
-
-        break;
     }
   }
 }
@@ -290,8 +347,12 @@ void loop() {
   if (isNewSettingToSend && !isInEditMode) {
     isNewSettingToSend = false;
     HTTPClient http;
-    http.begin(serverSendConfigAddress + temperatureLink + String(setTemperature, 2) + "&" + humidityLink + String(setHumidity, 2));
+    http.begin(String(serverSendConfigAddress) + String(temperatureLink) + String(setTemperature, 2) + "&" + String(humidityLink) + String(setHumidity, 2));
+    Serial.println(String(serverSendConfigAddress) + String(temperatureLink) + String(setTemperature, 2) + "&" + String(humidityLink) + String(setHumidity, 2));
     Serial.println("Sending to server temperature set to: " + String(setTemperature, 2) + "and humidity set to: " + String(setHumidity, 2));
+    http.begin(String(serverSendControlModeAddress) + String(controlMode, 0));
+    Serial.println(String(serverSendControlModeAddress) + String(controlMode, 0));
+    Serial.println("Sending to server control Mode set to: " + String(controlMode, 0));
     http.GET();
     http.end();
   }
@@ -299,7 +360,7 @@ void loop() {
     previousServerTime = currentTimeOnCore1;
     //  Chcecking connection with WiFi
     if (WiFi.status() == WL_CONNECTED && isInEditMode == false) {
-      controlMode = httpGETDATA(serverGetControlModeAddress);
+      //controlMode = (httpGETDATA(serverGetControlModeAddress)).toInt();
       String serverReply = httpGETDATA(serverGetConnfigAddress);
       noInterrupts();
       oldSetTemperature = setTemperature;
@@ -327,7 +388,7 @@ void loop() {
       if (WiFi.status() == WL_CONNECTED) {
         Serial.println("sending heater and humidifier state to server");
         HTTPClient http;
-        http.begin(serverSendStateAddress + heaterLink + String(wasHeatingOnLastSent ? 1 : 0, 0) + "&" + humidifierLink + String(wasHumidifierOnLastSent ? 1 : 0, 0));
+        http.begin(String(serverSendStateAddress) + String(heaterLink) + String(wasHeatingOnLastSent ? 1 : 0, 0) + "&" + String(humidifierLink) + String(wasHumidifierOnLastSent ? 1 : 0, 0));
         http.GET();
         http.end();
       }
@@ -342,7 +403,7 @@ void loop() {
       if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         Serial.println("sending temperature and humidity to server");
-        http.begin(serverSendReadingsgAddress + temperatureLink + String(temperatureReading, 2) + "&" + humidityLink + String(humidityReading, 2));
+        http.begin(String(serverSendReadingsgAddress) + String(temperatureLink) + String(temperatureReading, 2) + "&" + String(humidityLink) + String(humidityReading, 2));
         http.GET();
         http.end();
       }
@@ -363,7 +424,7 @@ String httpGETDATA(const char* serverLink) {
   HTTPClient http;
 
   //  Vader the time has come
-  http.begin(serverLink);
+  http.begin(String(serverLink));
 
   // Do it,... do it now
   int httpReply = http.GET();
@@ -467,32 +528,55 @@ float getHumidityFromSensor() {
   function responsible for proper message display
 */
 void simulateLCD() {
-  if (isInEditMode) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    if (isEditingTemperature) {
-      lcd.print("Temp set to " + String(setTemperature, 2));
-    }
-    else {
-      lcd.setCursor(0, 1);
-      lcd.print("Wil set to " + String(setHumidity, 2) + "%");
-    }
-  }
-  else {
-    if (!isInSeccondScreen) {
-      lcd.clear();
-      lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+
+  switch (isOnScreen)
+  {
+    case 0:
       lcd.print("Temp " + String(temperatureReading, 1) + "->" + String(setTemperature, 1));
       lcd.setCursor(0, 1);
       lcd.print("Wil " + String(humidityReading, 1) + "%->" + String(setHumidity, 1) + "%");
-    }
-    else {
-      lcd.clear();
-      lcd.setCursor(0, 0);
+      break;
+
+    case 1:
       lcd.print("Grzalka" + String(wasHeatingOnLastSent, 2));
       lcd.setCursor(0, 1);
       lcd.print("Pompka" + String(wasHumidifierOnLastSent, 2));
-    }
+      break;
+
+    case 10:
+      if (isEditingTemperature) {
+        lcd.print("Temp set to " + String(setTemperature, 2));
+      }
+      else {
+        lcd.setCursor(0, 1);
+        lcd.print("Wil set to " + String(setHumidity, 2) + "%");
+      }
+      break;
+
+    case 11:
+      lcd.print("Current control mode");
+      lcd.setCursor(0, 1);
+
+      switch (controlMode)
+      {
+        case 1:
+          lcd.print("PID");
+          break;
+
+        case 2:
+          lcd.print("On-Off");
+          break;
+
+        default:
+          lcd.print("Undefined mode");
+          break;
+      }
+      break;
+
+    default:
+      break;
   }
 }
 
