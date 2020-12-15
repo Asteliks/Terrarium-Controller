@@ -249,8 +249,8 @@ void codeForTask1( void * parameter )
             digitalWrite(humidifier, LOW);
             isHumidifierCurrentlyOn = false;
           }
-          }break;
-        
+        } break;
+
       case 2:
         {
           delay(3000);
@@ -276,8 +276,8 @@ void codeForTask1( void * parameter )
             digitalWrite(humidifier, HIGH);
             isHumidifierCurrentlyOn = true;
           }
-          }break;
-        
+        } break;
+
     }
   }
 }
