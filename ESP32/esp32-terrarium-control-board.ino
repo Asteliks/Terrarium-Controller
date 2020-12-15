@@ -249,7 +249,7 @@ void codeForTask1( void * parameter )
             digitalWrite(humidifier, LOW);
             isHumidifierCurrentlyOn = false;
           }
-        break;
+          break;
         }
 
       case 2:
@@ -277,8 +277,9 @@ void codeForTask1( void * parameter )
             digitalWrite(humidifier, HIGH);
             isHumidifierCurrentlyOn = true;
           }
-        break;
+          break;
         }
+
     }
   }
 }
@@ -347,10 +348,10 @@ void loop() {
     isNewSettingToSend = false;
     HTTPClient http;
     http.begin(String(serverSendConfigAddress) + String(temperatureLink) + String(setTemperature, 2) + "&" + String(humidityLink) + String(setHumidity, 2));
+    Serial.println(String(serverSendConfigAddress) + String(temperatureLink) + String(setTemperature, 2) + "&" + String(humidityLink) + String(setHumidity, 2));
     Serial.println("Sending to server temperature set to: " + String(setTemperature, 2) + "and humidity set to: " + String(setHumidity, 2));
-    http.GET();
-    http.end();
     http.begin(String(serverSendControlModeAddress) + String(controlMode, 0));
+    Serial.println(String(serverSendControlModeAddress) + String(controlMode, 0));
     Serial.println("Sending to server control Mode set to: " + String(controlMode, 0));
     http.GET();
     http.end();
@@ -359,7 +360,7 @@ void loop() {
     previousServerTime = currentTimeOnCore1;
     //  Chcecking connection with WiFi
     if (WiFi.status() == WL_CONNECTED && isInEditMode == false) {
-      controlMode = (httpGETDATA(serverGetControlModeAddress)).toInt();
+      //controlMode = (httpGETDATA(serverGetControlModeAddress)).toInt();
       String serverReply = httpGETDATA(serverGetConnfigAddress);
       noInterrupts();
       oldSetTemperature = setTemperature;
