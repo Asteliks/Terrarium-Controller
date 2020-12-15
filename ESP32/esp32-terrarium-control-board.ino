@@ -504,32 +504,39 @@ float getHumidityFromSensor() {
   function responsible for proper message display
 */
 void simulateLCD() {
-  if (isInEditMode) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  
+  switch (isOnScreen)
+  {
+  case 0:
+    lcd.print("Temp " + String(temperatureReading, 1) + "->" + String(setTemperature, 1));
+    lcd.setCursor(0, 1);
+    lcd.print("Wil " + String(humidityReading, 1) + "%->" + String(setHumidity, 1) + "%");
+    break;
+  
+  case 1:
+    lcd.print("Grzalka" + String(wasHeatingOnLastSent, 2));
+    lcd.setCursor(0, 1);
+    lcd.print("Pompka" + String(wasHumidifierOnLastSent, 2));
+    break;
+
+  case 10:
     if (isEditingTemperature) {
-      lcd.print("Temp set to " + String(setTemperature, 2));
+    lcd.print("Temp set to " + String(setTemperature, 2));
     }
     else {
-      lcd.setCursor(0, 1);
-      lcd.print("Wil set to " + String(setHumidity, 2) + "%");
+    lcd.setCursor(0, 1);
+    lcd.print("Wil set to " + String(setHumidity, 2) + "%");
     }
-  }
-  else {
-    if (!isInSeccondScreen) {
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("Temp " + String(temperatureReading, 1) + "->" + String(setTemperature, 1));
-      lcd.setCursor(0, 1);
-      lcd.print("Wil " + String(humidityReading, 1) + "%->" + String(setHumidity, 1) + "%");
-    }
-    else {
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print("Grzalka" + String(wasHeatingOnLastSent, 2));
-      lcd.setCursor(0, 1);
-      lcd.print("Pompka" + String(wasHumidifierOnLastSent, 2));
-    }
+    break;
+
+  case 11:
+    /* code */
+    break;
+  
+  default:
+    break;
   }
 }
 
