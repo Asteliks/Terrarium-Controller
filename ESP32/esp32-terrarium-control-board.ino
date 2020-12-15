@@ -532,7 +532,20 @@ void simulateLCD() {
     break;
 
   case 11:
-    /* code */
+    switch (controlMode)
+    {
+    case 1:
+      lcd.print("PID");
+      break;
+
+    case 2:
+      lcd.print("On-Off");
+      break;
+    
+    default:
+      lcd.print("Undefined mode");
+      break;
+    }
     break;
   
   default:
