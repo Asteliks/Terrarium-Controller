@@ -103,8 +103,23 @@ void IRAM_ATTR down() {
 void IRAM_ATTR set() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    isInEditMode = !isInEditMode;
-    isNewSettingToSend = true;
+    switch (isOnScreen)
+    {
+    case 10:
+      isOnScreen = 11;
+      break;
+    
+    case 11:
+      isOnScreen = 0;
+      isInEditMode = false;
+      break;
+    
+    default:
+      isOnScreen = 10;
+      isInEditMode = true;
+      isNewSettingToSend = true;
+      break;
+    }
   }
 }
 void IRAM_ATTR next() {
