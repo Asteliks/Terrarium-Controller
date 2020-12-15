@@ -532,6 +532,9 @@ void simulateLCD() {
     break;
 
   case 11:
+    lcd.print("Current control mode");
+    lcd.setCursor(0, 1);
+
     switch (controlMode)
     {
     case 1:
