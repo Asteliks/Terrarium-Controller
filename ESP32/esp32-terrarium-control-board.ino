@@ -65,6 +65,8 @@ volatile double oldSetTemperature, oldSetHumidity, setTemperature, setHumidity;
 float pidIntegralTemperature, pidIntegralHumidity, pidDerivativeTemperature, previousTemperature, pidDerivativeHumidity, previousHumidity, pidProportionTemperature, pidProportionHumidity, pidTemperature, pidHumidity;
 bool isHeatingCurrentlyOn, wasHeatingOnLastSent, isHumidifierCurrentlyOn, wasHumidifierOnLastSent;
 volatile bool isInSeccondScreen = false, isButtonInteractionLocked = false, isInEditMode = false, isEditingTemperature = true, isNewSettingToSend = false;
+volatile int isOnScreen = 0;
+static int dataScreens = 1, editScreens = 11;
 
 //button logic
 void IRAM_ATTR up() {
