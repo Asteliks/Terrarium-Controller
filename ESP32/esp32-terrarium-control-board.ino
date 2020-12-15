@@ -105,7 +105,7 @@ void IRAM_ATTR down() {
         }
         break;
       case 11:
-        if (controlMode=<1){
+        if (controlMode<=1){
           controlMode=2;
         }
         else
@@ -115,7 +115,6 @@ void IRAM_ATTR down() {
       }
     }
   }
-}
 void IRAM_ATTR set() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
@@ -144,11 +143,11 @@ void IRAM_ATTR next() {
     switch (isOnScreen)
     {
     case 0:
-      isOnScreen = 1
+      isOnScreen = 1;
       break;
     
     case 1:
-      isOnScreen = 0
+      isOnScreen = 0;
       break;
 
     case 10:
@@ -274,7 +273,6 @@ void codeForTask1( void * parameter )
           digitalWrite(humidifier, HIGH);
           isHumidifierCurrentlyOn = true;
         }
-
         break;
     }
   }
