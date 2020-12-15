@@ -81,6 +81,14 @@ void IRAM_ATTR up() {
         setHumidity += 0.5;
         }
         break;
+      case 11:
+        if (controlMode>=2){
+          controlMode=1;
+        }
+        else
+        {
+          controlMode +=1;
+        }
     }
   }
 }
@@ -96,6 +104,14 @@ void IRAM_ATTR down() {
         setHumidity -= 0.5;
         }
         break;
+      case 11:
+        if (controlMode=<1){
+          controlMode=2;
+        }
+        else
+        {
+          controlMode -=1;
+        }
       }
     }
   }
