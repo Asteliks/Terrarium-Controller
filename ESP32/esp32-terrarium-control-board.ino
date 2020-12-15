@@ -345,6 +345,8 @@ void loop() {
     HTTPClient http;
     http.begin(serverSendConfigAddress + temperatureLink + String(setTemperature, 2) + "&" + humidityLink + String(setHumidity, 2));
     Serial.println("Sending to server temperature set to: " + String(setTemperature, 2) + "and humidity set to: " + String(setHumidity, 2));
+    http.begin(serverSendControlModeAddress + String(controlMode, 0));
+    Serial.println("Sending to server control Mode set to: " + String(controlMode, 0));
     http.GET();
     http.end();
   }
