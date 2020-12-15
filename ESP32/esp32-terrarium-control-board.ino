@@ -125,11 +125,26 @@ void IRAM_ATTR set() {
 void IRAM_ATTR next() {
   if (!isButtonInteractionLocked) {
     isButtonInteractionLocked = true;
-    if (isInEditMode) {
+    switch (isOnScreen)
+    {
+    case 0:
+      isOnScreen = 1
+      break;
+    
+    case 1:
+      isOnScreen = 0
+      break;
+
+    case 10:
       isEditingTemperature = !isEditingTemperature;
-    }
-    else {
-      isInSeccondScreen = !isInSeccondScreen;
+      break;
+
+    case 11:
+      /* code */
+      break;
+    
+    default:
+      break;
     }
   }
 }
