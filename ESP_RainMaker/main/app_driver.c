@@ -47,23 +47,26 @@ static TimerHandle_t sensor_timer;
 
 static void app_sensor_update(void *priv)
 {
-    if (dht_read_data(sensor_type, dht1_gpio, &g_humidity1, &g_temperature1) == ESP_OK)
-        printf("Humidity: %d%% Temp: %dC\n", g_humidity1 / 10, g_temperature1 / 10);
+    if (dht_read_float_data(sensor_type, dht1_gpio, &g_humidity1, &g_temperature1) == ESP_OK)
+        printf("Humidity: %f%% Temp: %fC\n", g_humidity1 / 10, g_temperature1 / 10);
     else
         printf("Could not read data from sensor\n");
 
-    if (dht_read_data(sensor_type, dht2_gpio, &g_humidity2, &g_temperature2) == ESP_OK)
-        printf("Humidity: %d%% Temp: %dC\n", g_humidity2 / 10, g_temperature2 / 10);
+    if (dht_read_float_data(sensor_type, dht2_gpio, &g_humidity2, &g_temperature2) == ESP_OK)
+        printf("Humidity: %f%% Temp: %fC\n", g_humidity2 / 10, g_temperature2 / 10);
     else
         printf("Could not read data from sensor\n");
 
     esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_type(temp_sensor_device1, ESP_RMAKER_PARAM_TEMPERATURE),
                 esp_rmaker_float(g_temperature1));
+    esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_type(temp_sensor_device2, ESP_RMAKER_PARAM_TEMPERATURE),
                 esp_rmaker_float(g_temperature2));
+    esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_type(humi_sensor_device1, ESP_RMAKER_PARAM_TEMPERATURE),
                 esp_rmaker_float(g_humidity1));
+    esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_type(humi_sensor_device2, ESP_RMAKER_PARAM_TEMPERATURE),
                 esp_rmaker_float(g_humidity2));
 }
