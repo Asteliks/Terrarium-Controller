@@ -13,14 +13,18 @@
 #define DEFAULT_LIGHT_POWER         true
 #define DEFAULT_LIGHT_BRIGHTNESS    25
 #define DEFAULT_TEMPERATURE         25.0
+#define DEFAULT_HUMIDITY            30.0
 #define REPORTING_PERIOD            60 /* Seconds */
 
 extern esp_rmaker_device_t *switch_device;
 extern esp_rmaker_device_t *light__device;
 extern esp_rmaker_device_t *temp_sensor_device1;
 extern esp_rmaker_device_t *temp_sensor_device2;
+extern esp_rmaker_device_t *humi_sensor_device1;
+extern esp_rmaker_device_t *humi_sensor_device2;
 
 void app_driver_init(void);
 int app_driver_set_state(bool state);
 bool app_driver_get_state(void);
 float app_get_current_temperature();
+float app_get_current_humidity();

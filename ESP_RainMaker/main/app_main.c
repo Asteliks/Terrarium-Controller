@@ -26,6 +26,8 @@ static const char *TAG = "app_main";
 
 esp_rmaker_device_t *temp_sensor_device1;
 esp_rmaker_device_t *temp_sensor_device2;
+esp_rmaker_device_t *humi_sensor_device1;
+esp_rmaker_device_t *humi_sensor_device2;
 
 esp_rmaker_device_t *switch_device;
 esp_rmaker_device_t *light_device;
@@ -117,6 +119,17 @@ void app_main()
     /* Create a Temperature Sensor2 device and add the relevant parameters to it */
     temp_sensor_device2 = esp_rmaker_temp_sensor_device_create("Temperature Sensor 2", NULL, app_get_current_temperature(2));
     esp_rmaker_node_add_device(node, temp_sensor_device2);
+
+    /* Create a Humidity Sensor1 device and add the relevant parameters to it */
+            // humi_sensor_device1 = esp_rmaker_device_create("Humidity Sensor 1", "esp.device.temperature-sensor", NULL);
+            // esp_rmaker_device_add_param(humi_sensor_device1, esp_rmaker_temperature_param_create("Humidity", app_get_current_humidity(1)));
+            // esp_rmaker_node_add_device(node, humi_sensor_device1);
+    humi_sensor_device1 = esp_rmaker_temp_sensor_device_create("Humidity Sensor 1", NULL, app_get_current_humidity(1));
+    esp_rmaker_node_add_device(node, humi_sensor_device1);
+
+    /* Create a Humidity Sensor2 device and add the relevant parameters to it */
+    humi_sensor_device2 = esp_rmaker_temp_sensor_device_create("Humidity Sensor 2", NULL, app_get_current_humidity(2));
+    esp_rmaker_node_add_device(node, humi_sensor_device2);
 
     /* Enable scheduling.
      * Please note that you also need to set the timezone for schedules to work correctly.

@@ -35,6 +35,7 @@
 
 static bool g_power_state = DEFAULT_SWITCH_POWER;
 static float g_temperature1 = DEFAULT_TEMPERATURE, g_temperature2 = DEFAULT_TEMPERATURE;
+static float g_humidity1 = DEFAULT_HUMIDITY, g_humidity2 = DEFAULT_HUMIDITY;
 static TimerHandle_t sensor_timer;
 
 static void app_sensor_update(void *priv)
@@ -61,6 +62,21 @@ float app_get_current_temperature(int thermometer)
 
     case 2:
         return g_temperature2;
+        break;
+    }
+    return 0;
+}
+
+float app_get_current_humidity(int hygrometer)
+{
+    switch (hygrometer)
+    {
+    case 1:
+        return g_humidity1;
+        break;
+
+    case 2:
+        return g_humidity2;
         break;
     }
     return 0;
