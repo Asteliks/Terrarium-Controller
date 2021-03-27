@@ -19,6 +19,13 @@
 #include <ws2812_led.h>
 #include "app_priv.h"
 
+#include <dht.h>
+
+/* DHT sensor definition */
+static const dht_sensor_type_t sensor_type = DHT_TYPE_AM2301;
+static const gpio_num_t dht1_gpio = 17;
+static const gpio_num_t dht2_gpio = 18;
+
 /* This is the button that is used for toggling the power */
 #define BUTTON_GPIO          CONFIG_EXAMPLE_BOARD_BUTTON_GPIO
 #define BUTTON_ACTIVE_LEVEL  0
@@ -40,16 +47,25 @@ static TimerHandle_t sensor_timer;
 
 static void app_sensor_update(void *priv)
 {
-    static float delta = 0.5;
-    g_temperature1 += delta;
-    if (g_temperature1 > 99) {
-        delta = -0.5;
-    } else if (g_temperature1 < 1) {
-        delta = 0.5;
-    }
+    if (dht_read_data(sensor_type, dht1_gpio, &g_humidity1, &g_temperature1) == ESP_OK)
+        printf("Humidity: %d%% Temp: %dC\n", g_humidity1 / 10, g_temperature1 / 10);
+    else
+        printf("Could not read data from sensor\n");
+
+    if (dht_read_data(sensor_type, dht2_gpio, &g_humidity2, &g_temperature2) == ESP_OK)
+        printf("Humidity: %d%% Temp: %dC\n", g_humidity2 / 10, g_temperature2 / 10);
+    else
+        printf("Could not read data from sensor\n");
+
     esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_type(temp_sensor_device1, ESP_RMAKER_PARAM_TEMPERATURE),
                 esp_rmaker_float(g_temperature1));
+                esp_rmaker_device_get_param_by_type(temp_sensor_device2, ESP_RMAKER_PARAM_TEMPERATURE),
+                esp_rmaker_float(g_temperature2));
+                esp_rmaker_device_get_param_by_type(humi_sensor_device1, ESP_RMAKER_PARAM_TEMPERATURE),
+                esp_rmaker_float(g_humidity1));
+                esp_rmaker_device_get_param_by_type(humi_sensor_device2, ESP_RMAKER_PARAM_TEMPERATURE),
+                esp_rmaker_float(g_humidity2));
 }
 
 float app_get_current_temperature(int thermometer)
