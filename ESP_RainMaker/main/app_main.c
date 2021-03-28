@@ -42,18 +42,24 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
     }
     const char *device_name = esp_rmaker_device_get_name(device);
     const char *param_name = esp_rmaker_param_get_name(param);
-    if (strcmp(param_name, ESP_RMAKER_DEF_POWER_NAME) == 0) {
+    if (strcmp(device_name, "Switch") == 0) {
+            app_driver_set_state(val.val.b);
+    } else if (strcmp(param_name, ESP_RMAKER_DEF_POWER_NAME) == 0) {
         ESP_LOGI(TAG, "Received value = %s for %s - %s",
                 val.val.b? "true" : "false", device_name, param_name);
-        if (strcmp(device_name, "Switch") == 0) {
-            app_driver_set_state(val.val.b);
-        }
+        app_light_set_power(val.val.b);
     } else if (strcmp(param_name, ESP_RMAKER_DEF_BRIGHTNESS_NAME) == 0) {
         ESP_LOGI(TAG, "Received value = %d for %s - %s",
                 val.val.i, device_name, param_name);
-    } else if (strcmp(param_name, ESP_RMAKER_DEF_SPEED_NAME) == 0) {
+        app_light_set_brightness(val.val.i);
+    } else if (strcmp(param_name, ESP_RMAKER_DEF_HUE_NAME) == 0) {
         ESP_LOGI(TAG, "Received value = %d for %s - %s",
                 val.val.i, device_name, param_name);
+        app_light_set_hue(val.val.i);
+    } else if (strcmp(param_name, ESP_RMAKER_DEF_SATURATION_NAME) == 0) {
+        ESP_LOGI(TAG, "Received value = %d for %s - %s",
+                val.val.i, device_name, param_name);
+        app_light_set_saturation(val.val.i);
     } else {
         /* Silently ignoring invalid params */
         return ESP_OK;
@@ -101,14 +107,12 @@ void app_main()
     esp_rmaker_node_add_device(node, switch_device);
 
     /* Create a Light device and add the relevant parameters to it */
-    light_device = esp_rmaker_lightbulb_device_create("Light", NULL, DEFAULT_LIGHT_POWER);
+    light_device = esp_rmaker_lightbulb_device_create("Light", NULL, DEFAULT_POWER);
     esp_rmaker_device_add_cb(light_device, write_cb, NULL);
-    
-    esp_rmaker_device_add_param(light_device,
-            esp_rmaker_brightness_param_create(ESP_RMAKER_DEF_BRIGHTNESS_NAME, DEFAULT_LIGHT_BRIGHTNESS));
-    
-    esp_rmaker_device_add_attribute(light_device, "Serial Number", "012345");
-    esp_rmaker_device_add_attribute(light_device, "MAC", "xx:yy:zz:aa:bb:cc");
+
+    esp_rmaker_device_add_param(light_device, esp_rmaker_brightness_param_create(ESP_RMAKER_DEF_BRIGHTNESS_NAME, DEFAULT_BRIGHTNESS));
+    esp_rmaker_device_add_param(light_device, esp_rmaker_hue_param_create(ESP_RMAKER_DEF_HUE_NAME, DEFAULT_HUE));
+    esp_rmaker_device_add_param(light_device, esp_rmaker_saturation_param_create(ESP_RMAKER_DEF_SATURATION_NAME, DEFAULT_SATURATION));
 
     esp_rmaker_node_add_device(node, light_device);
     
