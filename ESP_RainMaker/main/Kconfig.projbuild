@@ -8,4 +8,16 @@ menu "Example Configuration"
             GPIO number on which the "Boot" button is connected. This is generally used
             by the application for custom operations like toggling states, resetting to defaults, etc.
 
+    config EXAMPLE_RMT_TX_GPIO
+        int "RMT TX GPIO"
+        default 21
+        help
+            Set the GPIO number used for transmitting the RMT signal.
+
+    config EXAMPLE_STRIP_LED_NUMBER
+        int "Number of LEDS in a strip"
+        default 60
+        help
+            A single RGB strip contains several LEDs.
+
 endmenu

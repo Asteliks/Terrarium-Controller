@@ -124,6 +124,8 @@ CONFIG_PARTITION_TABLE_MD5=y
 # Example Configuration
 #
 CONFIG_EXAMPLE_BOARD_BUTTON_GPIO=0
+CONFIG_EXAMPLE_RMT_TX_GPIO=21
+CONFIG_EXAMPLE_STRIP_LED_NUMBER=60
 # end of Example Configuration
 
 #
@@ -1160,12 +1162,6 @@ CONFIG_LED_EFFECT_COLOR_USING_RGB=y
 # end of LED effect
 
 #
-# LED strip
-#
-CONFIG_LED_STRIP_FLUSH_TIMEOUT=1000
-# end of LED strip
-
-#
 # LED strip SPI
 #
 CONFIG_LED_STRIP_SPI_USING_SK9822=y
@@ -1208,11 +1204,6 @@ CONFIG_ESP_RMAKER_FACTORY_NAMESPACE="rmaker_creds"
 CONFIG_ESP_RMAKER_DEF_TIMEZONE="Asia/Shanghai"
 CONFIG_ESP_RMAKER_SNTP_SERVER_NAME="pool.ntp.org"
 # end of ESP RainMaker Common
-
-#
-# WS2812 RGB LED
-#
-# end of WS2812 RGB LED
 # end of Component config
 
 #

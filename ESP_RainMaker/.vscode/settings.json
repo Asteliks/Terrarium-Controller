@@ -8,5 +8,9 @@
     "idf.espMdfPathWin": "",
     "idf.portWin": "COM3",
     "idf.pythonBinPathWin": "c:\\ESP\\tools\\python_env\\idf4.2_py3.9_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "c:\\ESP\\tools"
+    "idf.toolsPathWin": "c:\\ESP\\tools",
+    "files.associations": {
+        "*.inc": "c",
+        "led_strip.h": "c"
+    }
 }
