@@ -9,13 +9,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define DEFAULT_SWITCH_POWER        true
+#define DEFAULT_SWITCH_POWER        false
 
 #define DEFAULT_TEMPERATURE         25.0
 #define DEFAULT_HUMIDITY            30.0
 #define REPORTING_PERIOD            60 /* Seconds */
 
-#define DEFAULT_POWER       true
+#define DEFAULT_POWER       false
 #define DEFAULT_HUE         180
 #define DEFAULT_SATURATION  100
 #define DEFAULT_BRIGHTNESS  25

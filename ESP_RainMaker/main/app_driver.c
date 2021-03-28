@@ -137,7 +137,7 @@ esp_err_t led_set_hsv(uint32_t hue, uint32_t saturation, uint32_t brightness)
     ESP_LOGI(TAG, "Setting up LEDs");
     for (int i = 0; i < CONFIG_EXAMPLE_STRIP_LED_NUMBER; i++) {
         // Build RGB values
-        hue = i * 360 / CONFIG_EXAMPLE_STRIP_LED_NUMBER + start_rgb;
+        // hue = i * 360 / CONFIG_EXAMPLE_STRIP_LED_NUMBER + start_rgb;
         led_strip_hsv2rgb(hue, saturation, brightness, &red, &green, &blue);
         // Write RGB values to strip driver
         ESP_ERROR_CHECK(strip->set_pixel(strip, i, red, green, blue));
@@ -292,10 +292,16 @@ void app_driver_init()
     app_sensor_init();
 }
 
+static void set_power_state(bool target)
+{
+    gpio_set_level(OUTPUT_GPIO, !target);
+}
+
 int IRAM_ATTR app_driver_set_state(bool state)
 {
     if(g_power_state != state) {
         g_power_state = state;
+        set_power_state(g_power_state);
     }
     return ESP_OK;
 }
