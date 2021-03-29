@@ -12,5 +12,6 @@
     "files.associations": {
         "*.inc": "c",
         "led_strip.h": "c"
-    }
+    },
+    "idf.flashType": "UART"
 }
