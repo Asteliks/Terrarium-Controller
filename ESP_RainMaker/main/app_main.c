@@ -15,6 +15,7 @@
 
 #include <esp_rmaker_core.h>
 #include <esp_rmaker_standard_params.h>
+#include <esp_rmaker_standard_types.h>
 #include <esp_rmaker_standard_devices.h>
 #include <esp_rmaker_schedule.h>
 
@@ -30,8 +31,11 @@ esp_rmaker_device_t *humi_sensor_device1;
 esp_rmaker_device_t *humi_sensor_device2;
 
 esp_rmaker_device_t *switch_device;
+esp_rmaker_device_t *heater_device;
 esp_rmaker_device_t *light_device;
 esp_rmaker_device_t *temp_sensor_device;
+
+static const char *valid_strs[] = {"ON/OFF","PID"};
 
 /* Callback to handle commands received from the RainMaker cloud */
 static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
@@ -48,6 +52,16 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
         ESP_LOGI(TAG, "Received value = %s for %s - %s",
                 val.val.b? "true" : "false", device_name, param_name);
         app_light_set_power(val.val.b);
+    } else if (strcmp(device_name, "Heater") == 0) {
+        ESP_LOGI(TAG, "Received value = %s for %s - %s",
+                val.val.b? "true" : "false", device_name, param_name);
+            return ESP_OK;
+        // app_light_set_power(val.val.b);
+    } else if (strcmp(param_name, "Set Temperature") == 0) {
+        ESP_LOGI(TAG, "Received value = %s for %s - %s",
+                val.val.f? "true" : "false", device_name, param_name);
+            return ESP_OK;
+        // app_light_set_power(val.val.b);
     } else if (strcmp(param_name, ESP_RMAKER_DEF_BRIGHTNESS_NAME) == 0) {
         ESP_LOGI(TAG, "Received value = %d for %s - %s",
                 val.val.i, device_name, param_name);
@@ -134,6 +148,29 @@ void app_main()
     /* Create a Humidity Sensor2 device and add the relevant parameters to it */
     humi_sensor_device2 = esp_rmaker_temp_sensor_device_create("Humidity Sensor 2", NULL, app_get_current_humidity(2));
     esp_rmaker_node_add_device(node, humi_sensor_device2);
+
+    /* Create a Switch controlled heater device and add the relevant parameters to it */
+    heater_device = esp_rmaker_device_create("Heater", NULL, NULL);
+    esp_rmaker_device_add_cb(heater_device, write_cb, NULL);
+
+    esp_rmaker_device_add_param(heater_device, esp_rmaker_name_param_create("Name", "Heater"));
+
+    esp_rmaker_param_t *is_heater_on = esp_rmaker_param_create("power", NULL, esp_rmaker_bool(false), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    esp_rmaker_param_add_ui_type(is_heater_on, ESP_RMAKER_UI_TOGGLE);
+    esp_rmaker_device_add_param(heater_device, is_heater_on);
+    esp_rmaker_device_assign_primary_param(heater_device, is_heater_on);
+
+    esp_rmaker_param_t *set_temp = esp_rmaker_param_create("Set Temperature", NULL, esp_rmaker_float(30), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
+    esp_rmaker_param_add_ui_type(set_temp, ESP_RMAKER_UI_DROPDOWN);
+    esp_rmaker_param_add_bounds(set_temp, esp_rmaker_float(25), esp_rmaker_float(40), esp_rmaker_float(1));
+    esp_rmaker_device_add_param(heater_device, set_temp);
+    esp_rmaker_node_add_device(node, heater_device);
+
+    esp_rmaker_param_t *heater_mode = esp_rmaker_param_create("Set heater mode", NULL, esp_rmaker_str("ON/OFF"), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
+    esp_rmaker_param_add_ui_type(heater_mode, ESP_RMAKER_UI_DROPDOWN);
+    esp_rmaker_param_add_valid_str_list(heater_mode, valid_strs, 2);
+    esp_rmaker_device_add_param(heater_device, heater_mode);
+    esp_rmaker_node_add_device(node, heater_device);
 
     /* Enable scheduling.
      * Please note that you also need to set the timezone for schedules to work correctly.

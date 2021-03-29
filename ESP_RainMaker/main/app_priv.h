@@ -26,6 +26,7 @@ extern esp_rmaker_device_t *temp_sensor_device1;
 extern esp_rmaker_device_t *temp_sensor_device2;
 extern esp_rmaker_device_t *humi_sensor_device1;
 extern esp_rmaker_device_t *humi_sensor_device2;
+extern esp_rmaker_device_t *heater_device;
 
 void app_driver_init(void);
 
