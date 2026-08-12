@@ -1,3 +1,5 @@
+
+
 # esp32-terrarium-control-board
 
 This is a simple microcontroller terrariums climate control project. It consists of three parts:
@@ -26,3 +28,6 @@ Basically, the ESP32 controls the climate of our terrariums using a PID controll
 ![alt text](https://github.com/Asteliks/esp32-terrarium-control-board/blob/master/Pictures/IMG_3759.JPG)
 ![alt text](https://github.com/Asteliks/esp32-terrarium-control-board/blob/master/Pictures/IMG_3760.JPG)
 note: I've used LEDs to depict the state of the heater and humidifier relays
+
+# Android App Configuration
+Before running the app, open `Android app/app/src/main/res/values/server_url_example.xml`. Rename the string resources by removing "Example" (e.g., `getConfigExample` to `getConfig`) and replace the placeholder URLs with your deployed server endpoint.
